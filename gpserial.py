@@ -118,7 +118,7 @@ class move_parameter_dialog(wx.Dialog):
         # Arrangement.
         left_vbox = wx.BoxSizer(wx.VERTICAL)
         left_vbox.Add(self.function_area_title, 1)
-        left_vbox.Add(self.function_area_function_list_box, 8)
+        left_vbox.Add(self.function_area_function_list_box, 9)
 
         self.function_description_hbox = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -126,7 +126,7 @@ class move_parameter_dialog(wx.Dialog):
 
         right_vbox = wx.BoxSizer(wx.VERTICAL)
         right_vbox.Add(self.function_description_title, 1)
-        right_vbox.Add(self.function_description_hbox, 2, wx.EXPAND)
+        right_vbox.Add(self.function_description_hbox, 3, wx.EXPAND)
         right_vbox.Add(self.parameter_setting_title, 1)
         right_vbox.Add(self.parameter_vbox, 5, wx.EXPAND)
 
@@ -158,7 +158,7 @@ class move_parameter_dialog(wx.Dialog):
         self.parameter_vbox.Clear(True)
 
         self.function_description = wx.TextCtrl(self, value=function['description'], style=wx.TE_MULTILINE | wx.TE_READONLY)
-        self.function_description_hbox.Add(self.function_description, 1)
+        self.function_description_hbox.Add(self.function_description, 1, wx.EXPAND)
 
         self.parameter_list =[]
         for parameter_dict in function['parameter']:
@@ -611,7 +611,8 @@ class SerialFrame(wx.Frame):
 
     # Program exit.
     def on_program_exit_button_clicked(self, event):
-        self.Close(True)
+        self.Close()
+        #self.Destroy()
 
 
     # Logic function.
@@ -627,7 +628,7 @@ pause_time range [0, 65535].
 
 a5 range [0, 255] ([0, 255])
 count range [0, 255] ([0, 255])
-    '''
+'''
     def move_distance(self, parameter):
         '''
 When distance is big than max step_distance in single cycle, we must do action
@@ -648,7 +649,7 @@ value fro single cycle, and one for count time to complete another cycle action.
 That is to say, we must do two action.
 
 I think the later method is easier and clear than former.
-        '''
+'''
         motor_step  = float(self.m_move_parameter_motor_step_select.GetValue())
         direct      = parameter['direct']
         speed       = int(parameter['speed'])
@@ -756,8 +757,7 @@ I think the later method is easier and clear than former.
 
 class SerialThread(threading.Thread):
     def __init__(self, Ser):
-        super(SerialThread, self).__init__()
-        #threading.Thread.__init__()
+        threading.Thread.__init__(self)
         self.Ser = Ser
         self.start()
 
@@ -769,20 +769,6 @@ class SerialThread(threading.Thread):
 
             time.sleep(0.01)
 
-Img_inclosing = embeddedimage.PyEmbeddedImage(
-    "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAIAAAAC64paAAAAAXNSR0IArs4c6QAAAARnQU1B"
-    "AACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABiSURBVDhPY/iPDTBgAOzK0EQxtSGL"
-    "oCtG5uPXCZFFUQ/nEKMTTT/UJOJ1IusHaSZVJ1z/AGkmz70jXBfZ8QxNq+QFH8hWsm2GaiZD"
-    "PyQ7IbIY8Y5HZETq5GeoS/A6AK0kAQCtTO8ROTKfPAAAAABJRU5ErkJggg==")
-
-
-Img_inopening = embeddedimage.PyEmbeddedImage(
-    "iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARnQU1B"
-    "AACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAACKSURBVDhPY/wPBAw4wDtZVawyQo9v"
-    "49LCwIjNQFwGoZuCzWAmdEXEGgbSh00tioGkGAZzCLoeuIHkGIbNULCBlBiGbihGGOKMPiIl"
-    "qGogyKeMb2VUcKZDIh2FooyqLgSZPBINxJfRBzxSQI6jTaRQw9swM+AupMRQZL0oXibHUHQ9"
-    "GGFIiqHY1AIAg2UtGigTDxsAAAAASUVORK5CYII=")
-
 
 class one_app(wx.App):
     def OnInit(self):
@@ -791,6 +777,9 @@ class one_app(wx.App):
 
         #print 'Have shown.'
         return True
+
+    def OnExit(self):
+        print "OnExit"
 
 
 if __name__ == '__main__':
