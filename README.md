@@ -1,2 +1,7 @@
 # xserial
-Serial communication program with simple program function written with Python 2.7 and wxPython 3.0.1. [使用 Python 2.7 和 wxPython 3.0.1 编写的带有简单编程功能的串口通讯软件。]
+A graphical interface serial communication program with combination of command function. [一个带有组合命令功能的的图形界面串口通讯程序。]
+
+# Develop environment
+* Python 2.7.9
+* pyserial 3.2.1
+* wxPython 3.0.1.1
