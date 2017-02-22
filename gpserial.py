@@ -3,7 +3,7 @@
 
 import wx
 import wx.xrc
-from wx.lib.pubsub import pub as Publisher
+from wx.lib.pubsub import pub
 from wx.lib import embeddedimage
 from wx.lib import buttons
 
@@ -30,7 +30,7 @@ class move_parameter_dialog(wx.Dialog):
         self.functions = functions
 
         # Function selection area.
-        self.function_area_title = wx.StaticText(self, label=u"选择运动函数")
+        self.function_area_title = wx.StaticText(self, label=u"选择运动函数", style=wx.ALIGN_BOTTOM)
 
         function_verbose_names = []
         for element in self.functions:
@@ -48,35 +48,45 @@ class move_parameter_dialog(wx.Dialog):
         self.cancel_button = wx.Button(self, wx.ID_CANCEL, u"取消")
 
         # Arrangement.
+        left_hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+        left_hbox1.Add(self.function_area_title, 1, wx.ALIGN_BOTTOM)
+
+        left_hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        left_hbox2.Add(self.function_area_function_list_box, 1, wx.EXPAND)
+
         left_vbox = wx.BoxSizer(wx.VERTICAL)
-        left_vbox.Add(self.function_area_title, 1)
-        left_vbox.Add(self.function_area_function_list_box, 9)
+        left_vbox.Add(left_hbox1, 1, wx.EXPAND)
+        left_vbox.Add(left_hbox2, 9, wx.EXPAND)
+
+
+        right_hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox1.Add(self.function_description_title, 1, wx.ALIGN_BOTTOM)
 
         self.function_description_hbox = wx.BoxSizer(wx.HORIZONTAL)
 
+        right_hbox3 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox3.Add(self.parameter_setting_title, 0, wx.ALIGN_BOTTOM)
+
         self.parameter_vbox = wx.BoxSizer(wx.VERTICAL)
 
+        right_hbox5 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox5.Add(self.ok_button, 1)
+        right_hbox5.Add(self.cancel_button, 1)
+
         right_vbox = wx.BoxSizer(wx.VERTICAL)
-        right_vbox.Add(self.function_description_title, 1)
+        right_vbox.Add(right_hbox1, 1)
         right_vbox.Add(self.function_description_hbox, 3, wx.EXPAND)
-        right_vbox.Add(self.parameter_setting_title, 1)
+        right_vbox.Add(right_hbox3, 1)
         right_vbox.Add(self.parameter_vbox, 5, wx.EXPAND)
+        right_vbox.Add(right_hbox5, 1, wx.EXPAND)
 
-        up_hbox = wx.BoxSizer(wx.HORIZONTAL)
-        up_hbox.Add(left_vbox, 1, wx.EXPAND)
-        up_hbox.Add(right_vbox, 3, wx.EXPAND)
+        main_hbox = wx.BoxSizer(wx.HORIZONTAL)
+        main_hbox.Add(left_vbox, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
+        main_hbox.Add(right_vbox, 3, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
 
-        bottom_hbox = wx.BoxSizer(wx.HORIZONTAL)
-        bottom_hbox.Add(self.ok_button, 1)
-        bottom_hbox.Add(self.cancel_button, 1)
-
-        main_vbox = wx.BoxSizer(wx.VERTICAL)
-        main_vbox.Add(up_hbox, 1, wx.EXPAND)
-        main_vbox.Add(bottom_hbox, 0, wx.EXPAND)
-
-        self.SetSizer(main_vbox)
-        self.Layout()
+        self.SetSizer(main_hbox)
         #self.Fit()
+        self.Layout()
 
         # Connect Events
         self.function_area_function_list_box.Bind(wx.EVT_LISTBOX, self.on_function_area_function_list_box_selected)
@@ -117,8 +127,8 @@ class move_parameter_dialog(wx.Dialog):
 
             self.parameter_vbox.Add(self.parameter_hbox, 0, wx.EXPAND)
 
-        self.Layout()
         #self.Fit()
+        self.Layout()
 
 
     #def on_ok_button_clicked(self, event):
@@ -126,7 +136,7 @@ class move_parameter_dialog(wx.Dialog):
     #def on_cancel_button_clicked(self, event):
 
 
-class SerialFrame(wx.Frame):
+class serial_frame(wx.Frame):
     MIN_PERIOD = ['01', '02']
     MIN_SPEED = ''
     MAX_SPEED = ''
@@ -204,7 +214,7 @@ class SerialFrame(wx.Frame):
     ]
 
 
-    def __init__(self):
+    def __init__(self, serial_obj):
         wx.Frame.__init__(
                 self,
                 parent=None,
@@ -213,6 +223,8 @@ class SerialFrame(wx.Frame):
                 pos=wx.DefaultPosition,
                 size=wx.DefaultSize,
         )
+
+        self.ser = serial_obj
 
         #self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
         #self.SetForegroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_INFOBK))
@@ -308,7 +320,7 @@ class SerialFrame(wx.Frame):
 
         # Arrangement.
         left_hbox11 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox11.Add(self.m_recieve_area_title, 0)
+        left_hbox11.Add(self.m_recieve_area_title, 1, wx.ALIGN_BOTTOM)
 
         left_hbox12 = wx.BoxSizer(wx.HORIZONTAL)
         left_hbox12.Add(self.m_recieve_area, 1, wx.EXPAND)
@@ -317,15 +329,15 @@ class SerialFrame(wx.Frame):
         left_hbox13.Add(self.m_recieve_area_clear_button, 0)
 
         left_hbox21 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox21.Add(self.m_send_area_title, 0)
+        left_hbox21.Add(self.m_send_area_title, 0, wx.ALIGN_BOTTOM)
 
         left_hbox22 = wx.BoxSizer(wx.HORIZONTAL)
         left_hbox22.Add(self.m_send_area, 1, wx.EXPAND)
 
         left_hbox23 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox23.Add(self.m_send_input,1)
-        left_hbox23.Add(self.m_send_button, 0)
-        left_hbox23.Add(self.m_send_area_clear_button, 0)
+        left_hbox23.Add(self.m_send_input, 4, wx.ALIGN_CENTER_VERTICAL)
+        left_hbox23.Add(self.m_send_button, 1)
+        left_hbox23.Add(self.m_send_area_clear_button, 1)
 
         left_vbox = wx.BoxSizer(wx.VERTICAL)
         left_vbox.Add(left_hbox11, 1, wx.EXPAND)
@@ -336,39 +348,69 @@ class SerialFrame(wx.Frame):
         left_vbox.Add(left_hbox23, 1, wx.EXPAND)
 
         right_hbox11 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox11.Add(self.m_serial_parameter_title, 0)
+        right_hbox11.Add(self.m_serial_parameter_title, 0, wx.ALIGN_BOTTOM)
+
+
+        right_vbox12111 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox12111.Add(self.m_serial_parameter_com_title, 0)
+        right_vbox12112 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox12112.Add(self.m_serial_parameter_com_select, 0, wx.EXPAND)
+        right_hbox1211 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox1211.Add(right_vbox12111, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox1211.Add(right_vbox12112, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        right_vbox12121 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox12121.Add(self.m_serial_parameter_bitrate_title, 0)
+        right_vbox12122 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox12122.Add(self.m_serial_parameter_bitrate_select, 0, wx.EXPAND)
+        right_hbox1212 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox1212.Add(right_vbox12121, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox1212.Add(right_vbox12122, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        right_vbox12131 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox12131.Add(self.m_serial_parameter_databit_title, 0)
+        right_vbox12132 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox12132.Add(self.m_serial_parameter_databit_select, 0, wx.EXPAND)
+        right_hbox1213 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox1213.Add(right_vbox12131, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox1213.Add(right_vbox12132, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        right_vbox12141 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox12141.Add(self.m_serial_parameter_stopbit_title, 0)
+        right_vbox12142 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox12142.Add(self.m_serial_parameter_stopbit_select, 0, wx.EXPAND)
+        right_hbox1214 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox1214.Add(right_vbox12141, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox1214.Add(right_vbox12142, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        right_vbox12151 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox12151.Add(self.m_serial_parameter_checkbit_title, 0)
+        right_vbox12152 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox12152.Add(self.m_serial_parameter_checkbit_select, 0, wx.EXPAND)
+        right_hbox1215 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox1215.Add(right_vbox12151, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox1215.Add(right_vbox12152, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        right_vbox121 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox121.Add(right_hbox1211, 1, wx.EXPAND)
+        right_vbox121.Add(right_hbox1212, 1, wx.EXPAND)
+        right_vbox121.Add(right_hbox1213, 1, wx.EXPAND)
+        right_vbox121.Add(right_hbox1214, 1, wx.EXPAND)
+        right_vbox121.Add(right_hbox1215, 1, wx.EXPAND)
+
+
+        right_vbox122 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox122.Add(self.m_hex_show_checkbox, 1, wx.ALIGN_CENTER_HORIZONTAL)
+        right_vbox122.Add(self.m_hex_send_checkbox, 1, wx.ALIGN_CENTER_HORIZONTAL)
+        right_vbox122.Add(self.m_serial_parameter_open_button, 1, wx.EXPAND | wx.ALL, 5)
+        right_vbox122.Add(self.m_serial_parameter_close_button, 1, wx.EXPAND | wx.ALL, 5)
 
         right_hbox12 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox12.Add(self.m_serial_parameter_com_title, 1)
-        right_hbox12.Add(self.m_serial_parameter_com_select, 1)
-
-        right_hbox13 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox13.Add(self.m_serial_parameter_bitrate_title, 1)
-        right_hbox13.Add(self.m_serial_parameter_bitrate_select, 1)
-
-        right_hbox14 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox14.Add(self.m_serial_parameter_databit_title, 1)
-        right_hbox14.Add(self.m_serial_parameter_databit_select, 1)
-
-        right_hbox15 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox15.Add(self.m_serial_parameter_stopbit_title, 1)
-        right_hbox15.Add(self.m_serial_parameter_stopbit_select, 1)
-
-        right_hbox16 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox16.Add(self.m_serial_parameter_checkbit_title, 1)
-        right_hbox16.Add(self.m_serial_parameter_checkbit_select, 1)
-
-        right_hbox17 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox17.Add(self.m_hex_show_checkbox, 1)
-        right_hbox17.Add(self.m_hex_send_checkbox, 1)
-
-        right_hbox18 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox18.Add(self.m_serial_parameter_open_button, 1)
-        right_hbox18.Add(self.m_serial_parameter_close_button, 1)
-
+        right_hbox12.Add(right_vbox121, 1, wx.EXPAND)
+        right_hbox12.Add(right_vbox122, 1, wx.EXPAND)
 
         right_hbox21 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox21.Add(self.m_move_parameter_area_title, 0)
+        right_hbox21.Add(self.m_move_parameter_area_title, 0, wx.ALIGN_BOTTOM)
 
         right_hbox22 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox22.Add(self.m_move_parameter_area, 1)
@@ -378,7 +420,7 @@ class SerialFrame(wx.Frame):
         right_hbox23.Add(self.m_move_parameter_down_button, 1)
         right_hbox23.Add(self.m_move_parameter_edit_button, 1)
         right_hbox23.Add(self.m_move_parameter_delete_button, 1)
-        right_hbox23.Add(self.m_move_parameter_motor_step_select_title, 1)
+        right_hbox23.Add(self.m_move_parameter_motor_step_select_title, 1, wx.ALIGN_CENTER_VERTICAL)
         right_hbox23.Add(self.m_move_parameter_motor_step_select, 1)
 
         right_hbox24 = wx.BoxSizer(wx.HORIZONTAL)
@@ -390,21 +432,15 @@ class SerialFrame(wx.Frame):
 
         right_vbox = wx.BoxSizer(wx.VERTICAL)
         right_vbox.Add(right_hbox11, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox12, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox13, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox14, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox15, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox16, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox17, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox18, 1, wx.EXPAND)
+        right_vbox.Add(right_hbox12, 7, wx.EXPAND)
         right_vbox.Add(right_hbox21, 1, wx.EXPAND)
         right_vbox.Add(right_hbox22, 5, wx.EXPAND)
         right_vbox.Add(right_hbox23, 1, wx.EXPAND)
         right_vbox.Add(right_hbox24, 1, wx.EXPAND)
 
         up_hbox = wx.BoxSizer(wx.HORIZONTAL)
-        up_hbox.Add(left_vbox, 1, wx.EXPAND)
-        up_hbox.Add(right_vbox, 1, wx.EXPAND)
+        up_hbox.Add(left_vbox, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
+        up_hbox.Add(right_vbox, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
 
         bottom_hbox = wx.BoxSizer(wx.HORIZONTAL)
         bottom_hbox.Add(self.m_program_exit_button, 1)
@@ -415,17 +451,14 @@ class SerialFrame(wx.Frame):
 
 
         panel.SetSizer(main_vbox)
-        #panel.Centre()
-        panel.Layout()
-
-        # Make panel fit contents.
         panel.Fit()
+        #panel.Centre()
+        #panel.Layout()
 
-        #self.Centre()
-        self.Layout()
-
-        # Make SerialFrame fit contents.
+        #self.SetSizer(main_vbox)
         self.Fit()
+        #self.Centre()
+        #self.Layout()
 
 
         # Connect Events
@@ -451,12 +484,6 @@ class SerialFrame(wx.Frame):
 
         self.m_program_exit_button.Bind(wx.EVT_BUTTON, self.on_program_exit_button_clicked)
 
-        # Serial create.
-        self.Ser = Serial()
-        self.serialThread = SerialThread(self.Ser)
-
-        # Create a pubsub receiver
-        Publisher.subscribe(self.on_recieve_area_update, 'update')
 
     # Recieve area update
     def on_recieve_area_update(self, msg):
@@ -486,51 +513,57 @@ class SerialFrame(wx.Frame):
         self.m_send_area.Clear()
 
     def on_send_button_clicked(self, event):
-        if self.m_hex_send_checkbox.IsChecked():
-            self.Ser.write(self.m_send_input.GetValue().decode("hex"))
+        try:
+            if self.m_hex_send_checkbox.IsChecked():
+                self.ser.write(self.m_send_input.GetValue().decode("hex"))
+                self.m_send_area.AppendText(self.m_send_input.GetValue("hex"))
+            else:
+                self.ser.write(self.m_send_input.GetValue())
+                self.m_send_area.AppendText(self.m_send_input.GetValue())
+
+        except Exception, e:
+            print '[serial_frame\t] Write Fail!!',e
 
         else:
-            self.Ser.write(self.m_send_input.GetValue())
-            self.m_send_area.AppendText(self.m_send_input.GetValue())
-
-        self.m_send_input.Clear()
+            print '[serial_frame\t] Write Succeed!',e
+            self.m_send_input.Clear()
 
 
     # Parameter setting area.
     def on_serial_parameter_open_button_clicked(self, event):
-        if not self.Ser.isOpen():
+        if not self.ser.isOpen():
             try:
-                self.Ser.timeout = 1
-                self.Ser.xonxoff = 0
-                self.Ser.port = self.m_serial_parameter_com_select.GetValue()
-                self.Ser.parity = self.m_serial_parameter_checkbit_select.GetValue()[0]
-                self.Ser.baudrate = int(self.m_serial_parameter_bitrate_select.GetValue())
-                self.Ser.bytesize = int(self.m_serial_parameter_databit_select.GetValue())
-                self.Ser.stopbits = int(self.m_serial_parameter_stopbit_select.GetValue())
-                self.Ser.open()
-            except Exception,e:
-                print 'COMM Open Fail!!',e
+                self.ser.timeout = 1
+                self.ser.xonxoff = 0
+                self.ser.port = self.m_serial_parameter_com_select.GetValue()
+                self.ser.parity = self.m_serial_parameter_checkbit_select.GetValue()[0]
+                self.ser.baudrate = int(self.m_serial_parameter_bitrate_select.GetValue())
+                self.ser.bytesize = int(self.m_serial_parameter_databit_select.GetValue())
+                self.ser.stopbits = int(self.m_serial_parameter_stopbit_select.GetValue())
+                self.ser.open()
+            except Exception, e:
+                print '[serial_frame\t] COMM Open Fail!!',e
 
             else:
                 self.m_serial_parameter_close_button.Enable(True)
         else:
             pass
 
-            #self.Ser.close()
-            #while self.Ser.isOpen(): pass
+            #self.ser.close()
+            #while self.ser.isOpen(): pass
 
             #self.m_serial_parameter_open_button.SetLabel(u'打开串口')
             #self.m_imgStat.SetBitmap(Img_inclosing.getBitmap())
 
     def on_serial_parameter_close_button_clicked(self, event):
-        if self.Ser.isOpen():
+        if self.ser.isOpen():
             try:
-                self.Ser.close()
-                while self.Ser.isOpen():
+                self.ser.close()
+                while self.ser.isOpen():
                     pass
 
             except Exception, e:
-                print 'COMM close Fail!!', e
+                print '[serial_frame\t] COMM close Fail!!', e
 
             else:
                 self.m_serial_parameter_open_button.Enable(True)
@@ -577,6 +610,9 @@ class SerialFrame(wx.Frame):
             self.m_move_parameter_area.InsertStringItem(action_index, str(action_index + 1))
             self.m_move_parameter_area.SetStringItem(action_index, 1, function['verbose_name'])
             self.m_move_parameter_area.SetStringItem(action_index, 2, ', '.join(value_list))
+            self.m_move_parameter_area.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+            self.m_move_parameter_area.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+            self.m_move_parameter_area.SetColumnWidth(2, wx.LIST_AUTOSIZE)
 
         dia.Destroy()
 
@@ -621,6 +657,9 @@ class SerialFrame(wx.Frame):
                 self.m_move_parameter_area.InsertStringItem(action_index, str(action_index + 1))
                 self.m_move_parameter_area.SetStringItem(action_index, 1, self.functions[index]['parameter']['verbose_name'])
                 self.m_move_parameter_area.SetStringItem(action_index, 2, ', '.join(value_list))
+                self.m_move_parameter_area.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+                self.m_move_parameter_area.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+                self.m_move_parameter_area.SetColumnWidth(2, wx.LIST_AUTOSIZE)
 
         dlg.Destroy()
 
@@ -629,26 +668,35 @@ class SerialFrame(wx.Frame):
         commands = []
         real_commands = []
 
-        for action in self.actions:
-            command = getattr(self, action[0])(action)
-            commands.append(command)
+        if len(commmands) == 0:
+            for action in self.actions:
+                command = getattr(self, action[0])(action)
+                commands.append(command)
 
-        commands.append(['00', '00', '00',])
+            commands.append(['00', '00', '00',])
+        else:
+            pass
 
         for one_list in commands:
             real_commands.extend(one_list)
 
-        print(commands)
-        print(real_commands)
-        print(' '.join(real_commands))
-        print(''.join(real_commands))
+        print "[serial_frame\t] action list = %s" % (commands)
+        print "[serial_frame\t] total_list = %s" % (' '.join(real_commands))
+        print "[serial_frame\t] final_str  = %s" % (''.join(real_commands))
 
-        self.Ser.write(''.join(real_commands).decode("hex"))
+        try:
+            self.ser.write(''.join(real_commands).decode("hex"))
+        except Exception, e:
+            print '[serial_frame\t] Write Fail!!',e
+
+        else:
+            print '[serial_frame\t] Write succeed!!',e
 
 
     # Program exit.
     def on_program_exit_button_clicked(self, event):
         self.Close()
+        print "[serial_fram\t] Frame exit.exit."
         #self.Destroy()
 
 
@@ -793,31 +841,45 @@ class SerialFrame(wx.Frame):
             return [a11 + a12, a2, a3, a4, a5, a11 + self.DEFAULT_SPEED, '00', '01', '02',]
 
 
-class SerialThread(threading.Thread):
-    def __init__(self, Ser):
+class serial_thread(threading.Thread):
+    def __init__(self, ser):
         threading.Thread.__init__(self)
-        self.Ser = Ser
+        self.ser = ser
+        self.event_stop = threading.Event()
+
         self.start()
 
     def run(self):
-        while True:
-            if self.Ser.isOpen() and self.Ser.inWaiting():
-                text = self.Ser.read(self.Ser.inWaiting())
-                wx.CallAfter(Publisher.sendMessage('update', text))
+        while not self.event_stop.is_set():
+            if self.ser.isOpen() and self.ser.inWaiting():
+                text = self.ser.read(self.ser.inWaiting())
+                wx.CallAfter(pub.sendMessage('update', text))
 
             time.sleep(0.01)
+
+    def stop(self):
+        self.event_stop.set()
 
 
 class one_app(wx.App):
     def OnInit(self):
-        self.frame = SerialFrame()
-        self.frame.Show(True)
+        # Serial create.
+        self.ser = Serial()
+        self.thread = serial_thread(self.ser)
+
+        # Main frame.
+        self.frame = serial_frame(self.ser)
+        self.frame.Show()
+
+        # Create a pubsub receiver
+        pub.subscribe(self.frame.on_recieve_area_update, 'update')
 
         #print 'Have shown.'
         return True
 
     def OnExit(self):
-        print "OnExit"
+        self.thread.stop()
+        print "[one_app\t] serial_thread exit."
 
 
 def main():
