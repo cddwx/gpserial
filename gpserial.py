@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import wx
-import wx.xrc
-from wx.lib.pubsub import pub
-from wx.lib import embeddedimage
-from wx.lib import buttons
-
-import json
-import time
 import os
 import io
+import time
 import threading
-from serial import Serial
+import json
+
+import wx
+from wx.lib import buttons
+
+import wx.lib.pubsub.pub as pub
+
 import serial.tools.list_ports
+from serial import Serial
 
 
 class move_parameter_dialog(wx.Dialog):
@@ -668,7 +668,7 @@ class serial_frame(wx.Frame):
         commands = []
         real_commands = []
 
-        if len(commmands) == 0:
+        if len(commands) == 0:
             for action in self.actions:
                 command = getattr(self, action[0])(action)
                 commands.append(command)
@@ -845,8 +845,8 @@ class serial_thread(threading.Thread):
     def __init__(self, ser):
         threading.Thread.__init__(self)
         self.ser = ser
-        self.event_stop = threading.Event()
 
+        self.event_stop = threading.Event()
         self.start()
 
     def run(self):
