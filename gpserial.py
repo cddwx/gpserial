@@ -65,19 +65,22 @@ class move_parameter_dialog(wx.Dialog):
         self.function_description_hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         right_hbox3 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox3.Add(self.parameter_setting_title, 0, wx.ALIGN_BOTTOM)
+        right_hbox3.Add(self.parameter_setting_title, 1, wx.ALIGN_BOTTOM)
 
         self.parameter_vbox = wx.BoxSizer(wx.VERTICAL)
 
+        right_hbox4 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox4.Add(self.parameter_vbox, 1, wx.EXPAND)
+
         right_hbox5 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox5.Add(self.ok_button, 1)
-        right_hbox5.Add(self.cancel_button, 1)
+        right_hbox5.Add(self.ok_button, 1, wx.ALIGN_BOTTOM)
+        right_hbox5.Add(self.cancel_button, 1, wx.ALIGN_BOTTOM)
 
         right_vbox = wx.BoxSizer(wx.VERTICAL)
-        right_vbox.Add(right_hbox1, 1)
-        right_vbox.Add(self.function_description_hbox, 3, wx.EXPAND)
-        right_vbox.Add(right_hbox3, 1)
-        right_vbox.Add(self.parameter_vbox, 5, wx.EXPAND)
+        right_vbox.Add(right_hbox1, 1, wx.EXPAND)
+        right_vbox.Add(self.function_description_hbox, 2, wx.EXPAND)
+        right_vbox.Add(right_hbox3, 1, wx.EXPAND)
+        right_vbox.Add(right_hbox4, 5, wx.EXPAND)
         right_vbox.Add(right_hbox5, 1, wx.EXPAND)
 
         main_hbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -122,12 +125,12 @@ class move_parameter_dialog(wx.Dialog):
 
         for parameter_dict in self.parameter_list:
             self.parameter_hbox = wx.BoxSizer(wx.HORIZONTAL)
-            self.parameter_hbox.Add(parameter_dict['title'], 1)
-            self.parameter_hbox.Add(parameter_dict['input'], 1)
+            self.parameter_hbox.Add(parameter_dict['title'], 1, wx.ALIGN_CENTER_VERTICAL)
+            self.parameter_hbox.Add(parameter_dict['input'], 1, wx.ALIGN_CENTER_VERTICAL)
 
             self.parameter_vbox.Add(self.parameter_hbox, 0, wx.EXPAND)
 
-        #self.Fit()
+        self.Fit()
         self.Layout()
 
 
@@ -325,19 +328,22 @@ class serial_frame(wx.Frame):
         left_hbox12 = wx.BoxSizer(wx.HORIZONTAL)
         left_hbox12.Add(self.m_recieve_area, 1, wx.EXPAND)
 
+        left_vbox131 = wx.BoxSizer(wx.VERTICAL)
+        left_vbox131.Add(self.m_recieve_area_clear_button, 1, wx.ALIGN_RIGHT)
+
         left_hbox13 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox13.Add(self.m_recieve_area_clear_button, 0)
+        left_hbox13.Add(left_vbox131, 1, wx.EXPAND)
 
         left_hbox21 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox21.Add(self.m_send_area_title, 0, wx.ALIGN_BOTTOM)
+        left_hbox21.Add(self.m_send_area_title, 1, wx.ALIGN_BOTTOM)
 
         left_hbox22 = wx.BoxSizer(wx.HORIZONTAL)
         left_hbox22.Add(self.m_send_area, 1, wx.EXPAND)
 
         left_hbox23 = wx.BoxSizer(wx.HORIZONTAL)
         left_hbox23.Add(self.m_send_input, 4, wx.ALIGN_CENTER_VERTICAL)
-        left_hbox23.Add(self.m_send_button, 1)
-        left_hbox23.Add(self.m_send_area_clear_button, 1)
+        left_hbox23.Add(self.m_send_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        left_hbox23.Add(self.m_send_area_clear_button, 1, wx.ALIGN_CENTER_VERTICAL)
 
         left_vbox = wx.BoxSizer(wx.VERTICAL)
         left_vbox.Add(left_hbox11, 1, wx.EXPAND)
@@ -349,7 +355,6 @@ class serial_frame(wx.Frame):
 
         right_hbox11 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox11.Add(self.m_serial_parameter_title, 0, wx.ALIGN_BOTTOM)
-
 
         right_vbox12111 = wx.BoxSizer(wx.VERTICAL)
         right_vbox12111.Add(self.m_serial_parameter_com_title, 0)
@@ -413,21 +418,21 @@ class serial_frame(wx.Frame):
         right_hbox21.Add(self.m_move_parameter_area_title, 0, wx.ALIGN_BOTTOM)
 
         right_hbox22 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox22.Add(self.m_move_parameter_area, 1)
+        right_hbox22.Add(self.m_move_parameter_area, 1, wx.EXPAND)
 
         right_hbox23 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox23.Add(self.m_move_parameter_up_button, 1)
-        right_hbox23.Add(self.m_move_parameter_down_button, 1)
-        right_hbox23.Add(self.m_move_parameter_edit_button, 1)
-        right_hbox23.Add(self.m_move_parameter_delete_button, 1)
+        right_hbox23.Add(self.m_move_parameter_up_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox23.Add(self.m_move_parameter_down_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox23.Add(self.m_move_parameter_edit_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox23.Add(self.m_move_parameter_delete_button, 1, wx.ALIGN_CENTER_VERTICAL)
         right_hbox23.Add(self.m_move_parameter_motor_step_select_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox23.Add(self.m_move_parameter_motor_step_select, 1)
+        right_hbox23.Add(self.m_move_parameter_motor_step_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
         right_hbox24 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox24.Add(self.m_move_parameter_add_button, 1)
-        right_hbox24.Add(self.m_move_parameter_save_button, 1)
-        right_hbox24.Add(self.m_move_parameter_load_button, 1)
-        right_hbox24.Add(self.m_move_parameter_send_button, 1)
+        right_hbox24.Add(self.m_move_parameter_add_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox24.Add(self.m_move_parameter_save_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox24.Add(self.m_move_parameter_load_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox24.Add(self.m_move_parameter_send_button, 1, wx.ALIGN_CENTER_VERTICAL)
 
 
         right_vbox = wx.BoxSizer(wx.VERTICAL)
