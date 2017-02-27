@@ -5,7 +5,6 @@ A graphical interface serial communication program with combination of command f
 ![gpserial add dialog screenshot](gpserial-add.png)
 
 # Paremeter note
-* Direct
 
     Table: code
     
