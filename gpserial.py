@@ -24,28 +24,30 @@ class move_parameter_dialog(wx.Dialog):
                 id=wx.ID_ANY,
                 title=u"运动参数设置",
                 pos=wx.DefaultPosition,
-                size=wx.DefaultSize,
+                size=wx.DefaultSize
         )
 
         self.functions = functions
 
+        self.panel = wx.Panel(self)
+
         # Function selection area.
-        self.function_area_title = wx.StaticText(self, label=u"选择运动函数", style=wx.ALIGN_BOTTOM)
+        self.function_area_title = wx.StaticText(self.panel, label=u"选择运动函数", style=wx.ALIGN_BOTTOM)
 
         function_verbose_names = []
         for element in self.functions:
             function_verbose_names.append(element['verbose_name'])
 
-        self.function_area_function_list_box = wx.ListBox(self, choices=function_verbose_names, style=wx.LB_SINGLE)
+        self.function_area_function_list_box = wx.ListBox(self.panel, choices=function_verbose_names, style=wx.LB_SINGLE)
 
         # Parameter setting area.
-        self.function_description_title = wx.StaticText(self, label=u"函数描述")
+        self.function_description_title = wx.StaticText(self.panel, label=u"函数描述")
 
-        self.parameter_setting_title = wx.StaticText(self, label=u"函数参数设置")
+        self.parameter_setting_title = wx.StaticText(self.panel, label=u"函数参数设置")
 
         # Operation area.
-        self.ok_button = wx.Button(self, wx.ID_OK, u"确认添加")
-        self.cancel_button = wx.Button(self, wx.ID_CANCEL, u"取消")
+        self.ok_button = wx.Button(self.panel, wx.ID_OK, u"确认添加")
+        self.cancel_button = wx.Button(self.panel, wx.ID_CANCEL, u"取消")
 
         # Arrangement.
         left_hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -60,17 +62,14 @@ class move_parameter_dialog(wx.Dialog):
 
 
         right_hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox1.Add(self.function_description_title, 1, wx.ALIGN_BOTTOM)
+        right_hbox1.Add(self.function_description_title, 1, wx.ALIGN_BOTTOM)    
 
-        self.function_description_hbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.right_hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
         right_hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox3.Add(self.parameter_setting_title, 1, wx.ALIGN_BOTTOM)
 
-        self.parameter_vbox = wx.BoxSizer(wx.VERTICAL)
-
-        right_hbox4 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox4.Add(self.parameter_vbox, 1, wx.EXPAND)
+        self.right_hbox4 = wx.BoxSizer(wx.HORIZONTAL)
 
         right_hbox5 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox5.Add(self.ok_button, 1, wx.ALIGN_BOTTOM)
@@ -78,18 +77,21 @@ class move_parameter_dialog(wx.Dialog):
 
         right_vbox = wx.BoxSizer(wx.VERTICAL)
         right_vbox.Add(right_hbox1, 1, wx.EXPAND)
-        right_vbox.Add(self.function_description_hbox, 2, wx.EXPAND)
+        right_vbox.Add(self.right_hbox2, 3, wx.EXPAND)
         right_vbox.Add(right_hbox3, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox4, 5, wx.EXPAND)
+        right_vbox.Add(self.right_hbox4, 4, wx.EXPAND)
         right_vbox.Add(right_hbox5, 1, wx.EXPAND)
 
         main_hbox = wx.BoxSizer(wx.HORIZONTAL)
-        main_hbox.Add(left_vbox, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
-        main_hbox.Add(right_vbox, 3, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
+        main_hbox.Add(left_vbox, 1, wx.EXPAND | wx.ALL, 5)
+        main_hbox.Add(right_vbox, 3, wx.EXPAND | wx.ALL, 5)
 
-        self.SetSizer(main_hbox)
-        #self.Fit()
+        self.panel.SetSizer(main_hbox)
+        self.panel.Layout()
+        self.panel.Fit()
+
         self.Layout()
+        self.Fit()
 
         # Connect Events
         self.function_area_function_list_box.Bind(wx.EVT_LISTBOX, self.on_function_area_function_list_box_selected)
@@ -99,40 +101,36 @@ class move_parameter_dialog(wx.Dialog):
     def on_function_area_function_list_box_selected(self, event):
         function = self.functions[self.function_area_function_list_box.GetSelection()]
 
-        self.function_description_hbox.Clear(True)
-        self.parameter_vbox.Clear(True)
+        self.right_hbox2.Clear(True)
+        self.right_hbox4.Clear(True)
 
-        self.function_description = wx.TextCtrl(self, value=function['description'], style=wx.TE_MULTILINE | wx.TE_READONLY)
-        self.function_description_hbox.Add(self.function_description, 1, wx.EXPAND)
+        function_description = wx.TextCtrl(self.panel, value=function['description'], style=wx.TE_MULTILINE | wx.TE_READONLY)
 
-        self.parameter_list =[]
-        for parameter_dict in function['parameter']:
-            # Create widgets using names from data, but failed.
-            #self.%s = wx.StaticText(self, label=parameter_dict['verbose_name']) % (parameter_dict['name'] + '_title')
-            #self.%s = wx.TextCtrl(self, value=parameter_dict['value']) % (parameter_dict['name'] + '_input')
+        self.right_hbox2.Add(function_description, 1, wx.EXPAND)
 
-            #self.%s = wx.BoxSizer(wx.HORIZONTAL) % (parameter_dict['name'] + '_hbox')
-            #self.%s.Add(%s, 1) % (parameter_dict['name'] + '_hbox', parameter_dict['name'] + '_title')
-            #self.%s.Add(%s, 1) % (parameter_dict['name'] + '_hbox', parameter_dict['name'] + '_input')
 
-            #self.parameter_vbox.Add(self.%s, 1, wx.EXPAND) % (parameter_dict['name'] + '_hbox')
+        parameter_vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        box = []
+        self.title_button = []
+        self.value_input = []
+        for one_dict in function['parameter']:
+            self.title_button.append(wx.StaticText(self.panel, label=one_dict['verbose_name']))
+            self.value_input.append(wx.TextCtrl(self.panel, value=one_dict['value']))
 
-            one_dict = {}
-            one_dict['title'] = wx.StaticText(self, label=parameter_dict['verbose_name'])
-            one_dict['input'] = wx.TextCtrl(self, value=parameter_dict['value'])
+            box.append(wx.BoxSizer(wx.HORIZONTAL))
+            box[-1].Add(self.title_button[-1], 1, wx.ALIGN_CENTER_VERTICAL)
+            box[-1].Add(self.value_input[-1], 1, wx.ALIGN_CENTER_VERTICAL)
 
-            self.parameter_list.append(one_dict)
+            parameter_vbox.Add(box[-1], 0, wx.EXPAND)
 
-        for parameter_dict in self.parameter_list:
-            self.parameter_hbox = wx.BoxSizer(wx.HORIZONTAL)
-            self.parameter_hbox.Add(parameter_dict['title'], 1, wx.ALIGN_CENTER_VERTICAL)
-            self.parameter_hbox.Add(parameter_dict['input'], 1, wx.ALIGN_CENTER_VERTICAL)
+        self.right_hbox4.Add(parameter_vbox, 1, wx.EXPAND)
 
-            self.parameter_vbox.Add(self.parameter_hbox, 0, wx.EXPAND)
+        self.panel.Layout()
+        self.panel.Fit()
 
-        self.Fit()
         self.Layout()
-
+        self.Fit()
 
     #def on_ok_button_clicked(self, event):
 
@@ -244,7 +242,7 @@ class serial_frame(wx.Frame):
         # Send objects.
         self.m_send_area_title = wx.StaticText(panel, label=u"发送区")
         self.m_send_area = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
-        self.m_send_area_clear_button = wx.Button(panel, wx.ID_ANY, u"清除")
+        self.m_send_area_clear_button = wx.Button(panel, wx.ID_ANY, u"清空")
         self.m_send_input = wx.TextCtrl(panel)
         self.m_send_button = wx.Button(panel, label=u"发送")
 
@@ -329,7 +327,7 @@ class serial_frame(wx.Frame):
         left_hbox12.Add(self.m_recieve_area, 1, wx.EXPAND)
 
         left_vbox131 = wx.BoxSizer(wx.VERTICAL)
-        left_vbox131.Add(self.m_recieve_area_clear_button, 1, wx.ALIGN_RIGHT)
+        left_vbox131.Add(self.m_recieve_area_clear_button, 0, wx.ALIGN_RIGHT)
 
         left_hbox13 = wx.BoxSizer(wx.HORIZONTAL)
         left_hbox13.Add(left_vbox131, 1, wx.EXPAND)
@@ -340,18 +338,24 @@ class serial_frame(wx.Frame):
         left_hbox22 = wx.BoxSizer(wx.HORIZONTAL)
         left_hbox22.Add(self.m_send_area, 1, wx.EXPAND)
 
+        left_hbox231 = wx.BoxSizer(wx.VERTICAL)
+        left_hbox231.Add(self.m_send_area_clear_button, 0, wx.ALIGN_RIGHT)
+
         left_hbox23 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox23.Add(self.m_send_input, 4, wx.ALIGN_CENTER_VERTICAL)
-        left_hbox23.Add(self.m_send_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        left_hbox23.Add(self.m_send_area_clear_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        left_hbox23.Add(left_hbox231, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        left_hbox24 = wx.BoxSizer(wx.HORIZONTAL)
+        left_hbox24.Add(self.m_send_input, 1, wx.ALIGN_CENTER_VERTICAL)
+        left_hbox24.Add(self.m_send_button, 0, wx.ALIGN_CENTER_VERTICAL)
 
         left_vbox = wx.BoxSizer(wx.VERTICAL)
         left_vbox.Add(left_hbox11, 1, wx.EXPAND)
         left_vbox.Add(left_hbox12, 6, wx.EXPAND)
         left_vbox.Add(left_hbox13, 1, wx.EXPAND)
         left_vbox.Add(left_hbox21, 1, wx.EXPAND)
-        left_vbox.Add(left_hbox22, 6, wx.EXPAND)
+        left_vbox.Add(left_hbox22, 5, wx.EXPAND)
         left_vbox.Add(left_hbox23, 1, wx.EXPAND)
+        left_vbox.Add(left_hbox24, 1, wx.EXPAND)
 
         right_hbox11 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox11.Add(self.m_serial_parameter_title, 0, wx.ALIGN_BOTTOM)
@@ -404,11 +408,24 @@ class serial_frame(wx.Frame):
         right_vbox121.Add(right_hbox1215, 1, wx.EXPAND)
 
 
+        right_vbox1221 = wx.BoxSizer(wx.HORIZONTAL)
+        right_vbox1221.Add(self.m_hex_show_checkbox, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        right_vbox1222 = wx.BoxSizer(wx.HORIZONTAL)
+        right_vbox1222.Add(self.m_hex_send_checkbox, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        right_vbox1223 = wx.BoxSizer(wx.HORIZONTAL)
+        right_vbox1223.Add(self.m_serial_parameter_open_button, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        right_vbox1224 = wx.BoxSizer(wx.HORIZONTAL)
+        right_vbox1224.Add(self.m_serial_parameter_close_button, 1, wx.ALIGN_CENTER_VERTICAL)
+
+
         right_vbox122 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox122.Add(self.m_hex_show_checkbox, 1, wx.ALIGN_CENTER_HORIZONTAL)
-        right_vbox122.Add(self.m_hex_send_checkbox, 1, wx.ALIGN_CENTER_HORIZONTAL)
-        right_vbox122.Add(self.m_serial_parameter_open_button, 1, wx.EXPAND | wx.ALL, 5)
-        right_vbox122.Add(self.m_serial_parameter_close_button, 1, wx.EXPAND | wx.ALL, 5)
+        right_vbox122.Add(right_vbox1221, 1, wx.ALIGN_CENTER_HORIZONTAL)
+        right_vbox122.Add(right_vbox1222, 1, wx.ALIGN_CENTER_HORIZONTAL)
+        right_vbox122.Add(right_vbox1223, 1, wx.ALIGN_CENTER_HORIZONTAL)
+        right_vbox122.Add(right_vbox1224, 1, wx.ALIGN_CENTER_HORIZONTAL)
 
         right_hbox12 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox12.Add(right_vbox121, 1, wx.EXPAND)
@@ -456,14 +473,14 @@ class serial_frame(wx.Frame):
 
 
         panel.SetSizer(main_vbox)
+        #panel.Layout()
         panel.Fit()
         #panel.Centre()
-        #panel.Layout()
 
         #self.SetSizer(main_vbox)
+        #self.Layout()
         self.Fit()
         #self.Centre()
-        #self.Layout()
 
 
         # Connect Events
@@ -606,7 +623,7 @@ class serial_frame(wx.Frame):
             action.append(function['function_name'])
             for one_dict in function['parameter']:
                 index = function['parameter'].index(one_dict)
-                value = dia.parameter_list[index]['input'].GetValue()
+                value = dia.value_input[index].GetValue()
                 action.append(value)
                 value_list.append(one_dict['name'] + '=' + value)
 
