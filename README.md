@@ -7,26 +7,26 @@ A graphical interface serial communication program with combination of command f
 # Paremeter note
 * Direct
 
-Table: code
-
-code        compute value           pratical value
---------    ---------------         ----------------
-a1          0--F(0--15)             0, F(0, 15)
-a2          0--F(0--15)             min_time--F(min_time--15)
-a3          00-FF(00--FF)           00--FF(0--255)
-a4          0000-FFFF(0--65535)     min_time2--FFFF(min_time2--65535)
-a5          00--FF(0--255)          01-FF(1--255)
-
-
-Table: parameter
-
-parameter       compute eauation    value
---------------  -----------------   ------
-direct          0->0, F->1          0, 1
-speed           a2 * 5              (min_time * 5)--75
-step_distance   a3 * motor_step     0--(255 * motor_step)
-pause_time      a4                  min_time2--65535
-count           a5                  1-255
+    Table: code
+    
+    code        compute value           pratical value
+    --------    ---------------         ----------------
+    a1          0--F(0--15)             0, F(0, 15)
+    a2          0--F(0--15)             min_time--F(min_time--15)
+    a3          00-FF(00--FF)           00--FF(0--255)
+    a4          0000-FFFF(0--65535)     min_time2--FFFF(min_time2--65535)
+    a5          00--FF(0--255)          01-FF(1--255)
+    
+    
+    Table: parameter
+    
+    parameter       compute eauation    value
+    --------------  -----------------   ------
+    direct          0->0, F->1          0, 1
+    speed           a2 * 5              (min_time * 5)--75
+    step_distance   a3 * motor_step     0--(255 * motor_step)
+    pause_time      a4                  min_time2--65535
+    count           a5                  1-255
 
 
 When distance is big than max step_distance in single cycle, we must do action
