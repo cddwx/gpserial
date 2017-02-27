@@ -39,6 +39,7 @@ class move_parameter_dialog(wx.Dialog):
             function_verbose_names.append(element['verbose_name'])
 
         self.function_area_function_list_box = wx.ListBox(self.panel, choices=function_verbose_names, style=wx.LB_SINGLE)
+        self.function_area_function_list_box.SetSelection(0)
 
         # Parameter setting area.
         self.function_description_title = wx.StaticText(self.panel, label=u"函数描述")
@@ -65,13 +66,29 @@ class move_parameter_dialog(wx.Dialog):
         right_hbox1.Add(self.function_description_title, 1, wx.ALIGN_BOTTOM)    
 
         self.right_hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-        self.right_hbox2.Add(wx.StaticText(self.panel, label="..."), 1, wx.EXPAND)
+        self.right_hbox2.Add(wx.TextCtrl(self.panel, value=self.functions[0]['description'], style=wx.TE_MULTILINE | wx.TE_READONLY), 1, wx.EXPAND)
 
         right_hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox3.Add(self.parameter_setting_title, 1, wx.ALIGN_BOTTOM)
 
+        self.title_button = []
+        self.value_input = []
+        parameter_hbox = []
+        for one_dict in self.functions[0]['parameter']:
+            self.title_button.append(wx.StaticText(self.panel, label=one_dict['verbose_name']))
+            self.value_input.append(wx.TextCtrl(self.panel, value=one_dict['value']))
+
+            parameter_hbox.append(wx.BoxSizer(wx.HORIZONTAL))
+            parameter_hbox[-1].Add(self.title_button[-1], 1, wx.ALIGN_CENTER_VERTICAL)
+            parameter_hbox[-1].Add(self.value_input[-1], 1, wx.ALIGN_CENTER_VERTICAL)
+
+        parameter_vbox = wx.BoxSizer(wx.VERTICAL)
+        for one_element in parameter_hbox:
+            parameter_vbox.Add(one_element, 0, wx.EXPAND)
+
         self.right_hbox4 = wx.BoxSizer(wx.HORIZONTAL)
-        self.right_hbox4.Add(wx.StaticText(self.panel, label="..."), 1, wx.EXPAND)
+        self.right_hbox4.Add(parameter_vbox, 1, wx.EXPAND)
+        
 
         right_hbox5 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox5.Add(self.ok_button, 1, wx.ALIGN_BOTTOM)
@@ -140,10 +157,11 @@ class move_parameter_dialog(wx.Dialog):
 
 
 class serial_frame(wx.Frame):
-    MIN_PERIOD = ['01', '02']
+    MIN_PERIOD = '0102'
     MIN_SPEED = ''
     MAX_SPEED = ''
     DEFAULT_SPEED = '5'
+    MIN_DISTANCE = '00'
 
     actions = []
     functions = [
@@ -314,8 +332,8 @@ class serial_frame(wx.Frame):
 
         self.m_move_parameter_add_button = wx.Button(panel, label=u"添加运动")
         self.m_move_parameter_save_button = wx.Button(panel, label=u"保存运动")
-        self.m_move_parameter_load_button = wx.Button(panel, label=u"打开文件")
-        self.m_move_parameter_send_button = wx.Button(panel, label=u"发送指令")
+        self.m_move_parameter_load_button = wx.Button(panel, label=u"载入运动")
+        self.m_move_parameter_send_button = wx.Button(panel, label=u"发送HEX指令")
 
         # Program operation.
         self.m_program_exit_button = wx.Button(panel, label=u"退出程序")
@@ -439,28 +457,37 @@ class serial_frame(wx.Frame):
         right_hbox22 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox22.Add(self.m_move_parameter_area, 1, wx.EXPAND)
 
+        right_hbox231 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox231.Add(self.m_move_parameter_motor_step_select_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox231.Add(self.m_move_parameter_motor_step_select, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        right_vbox231 = wx.BoxSizer(wx.VERTICAL)
+        right_vbox231.Add(right_hbox231, 1, wx.ALIGN_RIGHT)
+
         right_hbox23 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox23.Add(self.m_move_parameter_up_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox23.Add(self.m_move_parameter_down_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox23.Add(self.m_move_parameter_edit_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox23.Add(self.m_move_parameter_delete_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox23.Add(self.m_move_parameter_motor_step_select_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox23.Add(self.m_move_parameter_motor_step_select, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox23.Add(right_vbox231, 1, wx.EXPAND)
 
         right_hbox24 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox24.Add(self.m_move_parameter_add_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox24.Add(self.m_move_parameter_save_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox24.Add(self.m_move_parameter_load_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox24.Add(self.m_move_parameter_send_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox24.Add(self.m_move_parameter_up_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox24.Add(self.m_move_parameter_down_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox24.Add(self.m_move_parameter_edit_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox24.Add(self.m_move_parameter_delete_button, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        right_hbox25 = wx.BoxSizer(wx.HORIZONTAL)
+        right_hbox25.Add(self.m_move_parameter_add_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox25.Add(self.m_move_parameter_save_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox25.Add(self.m_move_parameter_load_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        right_hbox25.Add(self.m_move_parameter_send_button, 1, wx.ALIGN_CENTER_VERTICAL)
 
 
         right_vbox = wx.BoxSizer(wx.VERTICAL)
         right_vbox.Add(right_hbox11, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox12, 7, wx.EXPAND)
+        right_vbox.Add(right_hbox12, 6, wx.EXPAND)
         right_vbox.Add(right_hbox21, 1, wx.EXPAND)
         right_vbox.Add(right_hbox22, 5, wx.EXPAND)
         right_vbox.Add(right_hbox23, 1, wx.EXPAND)
         right_vbox.Add(right_hbox24, 1, wx.EXPAND)
+        right_vbox.Add(right_hbox25, 1, wx.EXPAND)
 
         up_hbox = wx.BoxSizer(wx.HORIZONTAL)
         up_hbox.Add(left_vbox, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
@@ -692,14 +719,11 @@ class serial_frame(wx.Frame):
         commands = []
         real_commands = []
 
-        if len(commands) == 0:
-            for action in self.actions:
-                command = getattr(self, action[0])(action)
-                commands.append(command)
+        for action in self.actions:
+            command = getattr(self, action[0])(action)
+            commands.append(command)
 
-            commands.append(['00', '00', '00',])
-        else:
-            pass
+        commands.append(['00', '00', '00',])
 
         for one_list in commands:
             real_commands.extend(one_list)
@@ -726,143 +750,121 @@ class serial_frame(wx.Frame):
 
     # Logic function.
     '''
-    a12 range[0, 15]
-    Speed range [motor_step/3, infinite).
+    When distance is big than max step_distance in single cycle, we must do action
+    more than one.
 
-    a2 range [0, 255]
-    distance range [0, 255*motor_step].
+    One method is divide the convered distance in two interger number for
+    step_distance and cycle times, the numbers is called factor. we also need to
+    filter the factor so that they fit two variables' limit.  I come out a idea:
+    divide the converted distance in two number, which their muliplity is mostly
+    near the distance, then get max factor up to single cycle for that variable,
+    the other one for cycle time. but we faced a problem that how to get the two
+    numbers.
 
-    (a3 + a4) range [0('00 00'), 65535('FF FF')] ([258('01 02'), 65535(FF FF)])
-    pause_time range [0, 65535].
+    The other one method is divide the converted distance, getting the times and
+    left number. we use max variable value for single cycle, and the times number
+    for count time to do one cycle action, then use the left number for variable
+    value fro single cycle, and one for count time to complete another cycle action.
+    That is to say, we must do two action.
 
-    a5 range [0, 255] ([0, 255])
-    count range [0, 255] ([0, 255])
+    I think the later method is easier and clear than former.
+
+    Time is dealed with same method.
     '''
 
     def move_distance(self, parameter):
-        '''
-        When distance is big than max step_distance in single cycle, we must do action
-        more than one.
-
-        One method is divide the convered distance in two interger number for
-        step_distance and cycle times, the numbers is called factor. we also need to
-        filter the factor so that they fit two variables' limit.  I come out a idea:
-        divide the converted distance in two number, which their muliplity is mostly
-        near the distance, then get max factor up to single cycle for that variable,
-        the other one for cycle time. but we faced a problem that how to get the two
-        numbers.
-
-        The other one method is divide the converted distance, getting the times and
-        left number. we use max variable value for single cycle, and the times number
-        for count time to do one cycle action, then use the left number for variable
-        value fro single cycle, and one for count time to complete another cycle action.
-        That is to say, we must do two action.
-
-        I think the later method is easier and clear than former.
-        '''
         motor_step  = float(self.m_move_parameter_motor_step_select.GetValue())
-        direct      = parameter[1]
-        speed       = float(parameter[2])
+        direct      = int(parameter[1])
+        speed       = int(parameter[2])
         distance    = float(parameter[3])
 
-        if parameter[1] == 1:
-            a11 = 'F'
+        if direct == 1:
+            a1 = 'F'
         else:
-            a11 = '0'
+            a1 = '0'
 
-        a12 = '%1X' % (int(round(5 * (motor_step / speed))))
-        a2 = ''
-        a3 = self.MIN_PERIOD[0]
-        a4 = self.MIN_PERIOD[1]
+        a2 = '%1X' % (int(round(speed / 5)))
+        a3 = ''
+        a4 = self.MIN_PERIOD
         a5 = ''
 
         total = int(round(distance / motor_step))
-        cycle = total / 255
+        cycle = int(total / 255)
         left =  total - cycle * 255
 
         if cycle > 0:
             if left != 0:
-                a2 = 'FF'
+                a3 = 'FF'
                 a5 = '%02X' % (cycle)
 
-                a2_left = '%02X' % (left)
+                a3_left = '%02X' % (left)
                 a5_left = '01'
-                return [a11 + a12, a2, a3, a4, a5, a11 + self.DEFAULT_SPEED, '00', '01', '02',
-                        a11 + a12, a2_left, a3, a4, a5_left, a11 + self.DEFAULT_SPEED, '00', '01', '02',
+                return [a1, a2, a3, a4, a5, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,
+                        a1, a2, a3_left, a4, a5_left, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,
                 ]
             else:
-                a2 = 'FF'
+                a3 = 'FF'
                 a5 = '%02X' % (cycle)
-                return [a11 + a12, a2, a3, a4, a5, a11 + self.DEFAULT_SPEED, '00', '01', '02',]
+                return [a1, a2, a3, a4, a5, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,]
 
         else:
-            a2 = '%02X' % (total)
+            a3 = '%02X' % (total)
             a5 = '01'
-            return [a11 + a12, a2, a3, a4, a5, a11 + self.DEFAULT_SPEED, '00', '01', '02',]
+            return [a1, a2, a3, a4, a5, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,]
 
     def classical_move(self, parameter):
         motor_step      = float(self.m_move_parameter_motor_step_select.GetValue())
-        direct          = parameter[1]
-        speed           = float(parameter[2])
+        direct          = int(parameter[1])
+        speed           = int(parameter[2])
         step_distance   = float(parameter[3])
         pause_time      = int(parameter[4])
         count           = int(parameter[5])
 
         # True point 'F', move up direct.
-        if parameter[1] == 1:
-            a11 = 'F'
+        if direct == 1:
+            a1 = 'F'
         else:
-            a11 = '0'
+            a1 = '0'
 
-        a12 ='%1X' % (int(round(5 * (motor_step / speed))))
-        a2 = '%02X' % (int(round(step_distance / motor_step)))
-        a3 = '%02X' % (pause_time / 256)
-        a4 = '%02X' % (pause_time % 256)
+        a2 ='%1X' % (int(round(speed / 5)))
+        a3 = '%02X' % (int(round(step_distance / motor_step)))
+        a4 = '%02X%02X' % (int(pause_time / 256), (pause_time % 256))
         a5 = '%02X' % (count)
 
-        return [a11 + a12, a2, a3, a4, a5, a11 + self.DEFAULT_SPEED, '00', '01', '02',]
+        return [a1, a2, a3, a4, a5, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,]
 
     def pause(self, parameter):
         motor_step  = float(self.m_move_parameter_motor_step_select.GetValue())
         time        = int(parameter[1])
 
-        if parameter[1] == 1:
-            a11 = 'F'
-        else:
-            a11 = '0'
-
-        a12 = '5'
-        a2 = '00'
-        a3 = ''
+        a1 = '0'
+        a2 = self.DEFAULT_SPEED
+        a3 = self.MIN_DISTANCE
         a4 = ''
         a5 = ''
 
-        cycle = time / 65535
+        cycle = int(time / 65535)
         left =  time - cycle * 65535
 
         if cycle > 0:
             if left != 0:
-                a3 = 'FF'
-                a4 = 'FF'
+                a4 = 'FFFF'
                 a5 = '%02X' % (cycle)
 
-                a3_left = '%02X' % (left / 256)
-                a4_left = '%02X' % (left % 256)
+                a4_left = '%02X%02X' % (int(left / 256), (left % 256))
                 a5_left = '01'
-                return [a11 + a12, a2, a3, a4, a5, a11 + self.DEFAULT_SPEED, '00', '01', '02',
-                        a11 + a12, a2, a3_left, a4_left, a5_left, a11 + self.DEFAULT_SPEED, '00', '01', '02',
+                return [a1, a2, a3, a4, a5, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,
+                        a1, a2, a3, a4_left, a5_left, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,
                 ]
             else:
-                a3 = 'FF'
-                a4 = 'FF'
+                a4 = 'FFFF'
                 a5 = '%02X' % (cycle)
-                return [a11 + a12, a2, a3, a4, a5, a11 + self.DEFAULT_SPEED, '00', '01', '02',]
+                return [a1, a2, a3, a4, a5, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,]
 
         else:
-            a3 = '%02X' % (left / 256)
-            a4 = '%02X' % (left % 256)
+            a4 = '%02X%02X' % (int(left / 256), (left % 256))
             a5 = '01'
-            return [a11 + a12, a2, a3, a4, a5, a11 + self.DEFAULT_SPEED, '00', '01', '02',]
+            return [a1, a2, a3, a4, a5, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,]
 
 
 class serial_thread(threading.Thread):
