@@ -65,11 +65,13 @@ class move_parameter_dialog(wx.Dialog):
         right_hbox1.Add(self.function_description_title, 1, wx.ALIGN_BOTTOM)    
 
         self.right_hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        self.right_hbox2.Add(wx.StaticText(self.panel, label="..."), 1, wx.EXPAND)
 
         right_hbox3 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox3.Add(self.parameter_setting_title, 1, wx.ALIGN_BOTTOM)
 
         self.right_hbox4 = wx.BoxSizer(wx.HORIZONTAL)
+        self.right_hbox4.Add(wx.StaticText(self.panel, label="..."), 1, wx.EXPAND)
 
         right_hbox5 = wx.BoxSizer(wx.HORIZONTAL)
         right_hbox5.Add(self.ok_button, 1, wx.ALIGN_BOTTOM)
@@ -84,7 +86,7 @@ class move_parameter_dialog(wx.Dialog):
 
         main_hbox = wx.BoxSizer(wx.HORIZONTAL)
         main_hbox.Add(left_vbox, 1, wx.EXPAND | wx.ALL, 5)
-        main_hbox.Add(right_vbox, 3, wx.EXPAND | wx.ALL, 5)
+        main_hbox.Add(right_vbox, 2, wx.EXPAND | wx.ALL, 5)
 
         self.panel.SetSizer(main_hbox)
         self.panel.Layout()
@@ -127,10 +129,10 @@ class move_parameter_dialog(wx.Dialog):
         self.right_hbox4.Add(parameter_vbox, 1, wx.EXPAND)
 
         self.panel.Layout()
-        self.panel.Fit()
+        #self.panel.Fit()
 
         self.Layout()
-        self.Fit()
+        #self.Fit()
 
     #def on_ok_button_clicked(self, event):
 
@@ -473,12 +475,12 @@ class serial_frame(wx.Frame):
 
 
         panel.SetSizer(main_vbox)
-        #panel.Layout()
+        panel.Layout()
         panel.Fit()
         #panel.Centre()
 
         #self.SetSizer(main_vbox)
-        #self.Layout()
+        self.Layout()
         self.Fit()
         #self.Centre()
 
