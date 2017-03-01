@@ -10,7 +10,7 @@ import json
 import wx
 from wx.lib import buttons
 
-import wx.lib.pubsub.pub as pub
+from wx.lib.pubsub import pub
 
 import serial.tools.list_ports
 from serial import Serial
@@ -50,26 +50,17 @@ class move_parameter_dialog(wx.Dialog):
         self.ok_button = wx.Button(self.panel, wx.ID_OK, u"确认添加")
         self.cancel_button = wx.Button(self.panel, wx.ID_CANCEL, u"取消")
 
+
         # Arrangement.
-        left_hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox1.Add(self.function_area_title, 1, wx.ALIGN_BOTTOM)
+        box_function_list = wx.FlexGridSizer(0, 1)
+        box_function_list.Add(self.function_area_title, 0, wx.ALIGN_BOTTOM)
+        box_function_list.Add(self.function_area_function_list_box, 0, wx.EXPAND)
+        box_function_list.AddGrowableRow(1, 1)
+        box_function_list.AddGrowableCol(0, 1)
 
-        left_hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox2.Add(self.function_area_function_list_box, 1, wx.EXPAND)
-
-        left_vbox = wx.BoxSizer(wx.VERTICAL)
-        left_vbox.Add(left_hbox1, 1, wx.EXPAND)
-        left_vbox.Add(left_hbox2, 9, wx.EXPAND)
-
-
-        right_hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox1.Add(self.function_description_title, 1, wx.ALIGN_BOTTOM)    
 
         self.right_hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         self.right_hbox2.Add(wx.TextCtrl(self.panel, value=self.functions[0]['description'], style=wx.TE_MULTILINE | wx.TE_READONLY), 1, wx.EXPAND)
-
-        right_hbox3 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox3.Add(self.parameter_setting_title, 1, wx.ALIGN_BOTTOM)
 
         self.title_button = []
         self.value_input = []
@@ -88,24 +79,23 @@ class move_parameter_dialog(wx.Dialog):
 
         self.right_hbox4 = wx.BoxSizer(wx.HORIZONTAL)
         self.right_hbox4.Add(parameter_vbox, 1, wx.EXPAND)
-        
 
-        right_hbox5 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox5.Add(self.ok_button, 1, wx.ALIGN_BOTTOM)
-        right_hbox5.Add(self.cancel_button, 1, wx.ALIGN_BOTTOM)
+        box_function_parameter = wx.GridBagSizer()
+        box_function_parameter.Add(self.function_description_title, (0, 0), (1, 2), wx.ALIGN_BOTTOM)
+        box_function_parameter.Add(self.right_hbox2, (1, 0), (1, 2), wx.EXPAND)
+        box_function_parameter.Add(self.parameter_setting_title, (2, 0), (1, 2), wx.ALIGN_BOTTOM)
+        box_function_parameter.Add(self.right_hbox4, (3, 0), (1, 2), wx.EXPAND)
+        box_function_parameter.Add(self.ok_button, (4,0), (1, 1), wx.ALIGN_CENTER_HORIZONTAL)
+        box_function_parameter.Add(self.cancel_button, (4,1), (1, 1), wx.ALIGN_CENTER_HORIZONTAL)
+        box_function_parameter.AddGrowableCol(0, 1)
 
-        right_vbox = wx.BoxSizer(wx.VERTICAL)
-        right_vbox.Add(right_hbox1, 1, wx.EXPAND)
-        right_vbox.Add(self.right_hbox2, 3, wx.EXPAND)
-        right_vbox.Add(right_hbox3, 1, wx.EXPAND)
-        right_vbox.Add(self.right_hbox4, 4, wx.EXPAND)
-        right_vbox.Add(right_hbox5, 1, wx.EXPAND)
 
-        main_hbox = wx.BoxSizer(wx.HORIZONTAL)
-        main_hbox.Add(left_vbox, 1, wx.EXPAND | wx.ALL, 5)
-        main_hbox.Add(right_vbox, 2, wx.EXPAND | wx.ALL, 5)
+        main_box = wx.BoxSizer(wx.HORIZONTAL)
+        main_box.Add(box_function_list, 1, wx.EXPAND | wx.ALL, 5)
+        main_box.Add(box_function_parameter, 2, wx.EXPAND | wx.ALL, 5)
 
-        self.panel.SetSizer(main_hbox)
+
+        self.panel.SetSizer(main_box)
         self.panel.Layout()
         self.panel.Fit()
 
@@ -146,10 +136,10 @@ class move_parameter_dialog(wx.Dialog):
         self.right_hbox4.Add(parameter_vbox, 1, wx.EXPAND)
 
         self.panel.Layout()
-        #self.panel.Fit()
+        self.panel.Fit()
 
         self.Layout()
-        #self.Fit()
+        self.Fit()
 
     #def on_ok_button_clicked(self, event):
 
@@ -254,22 +244,23 @@ class serial_frame(wx.Frame):
         panel = wx.Panel(self)
 
         # Recieve objects.
-        self.m_recieve_area_title = wx.StaticText(panel, label=u"接收区")
+        self.m_recieve_title = wx.StaticText(panel, label=u"接收区")
         self.m_recieve_area = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
-        self.m_recieve_area_clear_button = wx.Button(panel, label=u"清空")
-
+        self.m_hex_show_checkbox = wx.CheckBox(panel, label=u"HEX显示")
+        self.m_recieve_clear_button = wx.Button(panel, label=u"清空")
 
         # Send objects.
-        self.m_send_area_title = wx.StaticText(panel, label=u"发送区")
+        self.m_send_title = wx.StaticText(panel, label=u"发送区")
         self.m_send_area = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
-        self.m_send_area_clear_button = wx.Button(panel, wx.ID_ANY, u"清空")
+        self.m_hex_send_checkbox = wx.CheckBox(panel, label=u"HEX发送")
+        self.m_send_clear_button = wx.Button(panel, wx.ID_ANY, u"清空")
         self.m_send_input = wx.TextCtrl(panel)
         self.m_send_button = wx.Button(panel, label=u"发送")
 
         # Serial parameter setting.
-        self.m_serial_parameter_title = wx.StaticText(panel, label=u"串口设置")
+        self.m_serial_title = wx.StaticText(panel, label=u"串口设置")
 
-        self.m_serial_parameter_com_title = wx.StaticText(panel, label=u"通讯端口：")
+        self.m_serial_com_title = wx.StaticText(panel, label=u"通讯端口：")
 
         #m_com_choices = [ u"COM1", u"COM2", u"COM3", u"COM4", u"COM5", u"COM6", u"COM7", u"COM8", u"COM9" ]
         m_com_choices = []
@@ -280,228 +271,165 @@ class serial_frame(wx.Frame):
         else:
             m_com_choices = []
 
-        self.m_serial_parameter_com_select = wx.ComboBox(panel, choices=m_com_choices, style=wx.CB_READONLY)
+        self.m_serial_com_select = wx.ComboBox(panel, choices=m_com_choices, style=wx.CB_READONLY)
+        self.m_serial_com_select.SetSelection(0)
 
 
-        self.m_serial_parameter_bitrate_title = wx.StaticText(panel, label=u"波特率：")
+        self.m_serial_bitrate_title = wx.StaticText(panel, label=u"波特率：")
 
         m_bitrate_choices = [ u"2400", u"4800", u"9600", u"14400", u"19200", u"28800", u"57600" ]
-        self.m_serial_parameter_bitrate_select = wx.ComboBox(panel, choices=m_bitrate_choices, style=wx.CB_READONLY)
+        self.m_serial_bitrate_select = wx.ComboBox(panel, choices=m_bitrate_choices, style=wx.CB_READONLY)
+        self.m_serial_bitrate_select.SetSelection(2)
 
 
-        self.m_serial_parameter_databit_title = wx.StaticText(panel, label=u"数据位：")
+        self.m_serial_databit_title = wx.StaticText(panel, label=u"数据位：")
 
         m_databit_choices = [ u"5", u"6", u"7", u"8" ]
-        self.m_serial_parameter_databit_select = wx.ComboBox(panel, choices=m_databit_choices, style=wx.CB_READONLY)
+        self.m_serial_databit_select = wx.ComboBox(panel, choices=m_databit_choices, style=wx.CB_READONLY)
+        self.m_serial_databit_select.SetSelection(3)
 
-        self.m_serial_parameter_checkbit_title = wx.StaticText(panel, label=u"校验位：")
+        self.m_serial_checkbit_title = wx.StaticText(panel, label=u"校验位：")
 
         m_checkbit_choices = [ u"None", u"Odd", u"Even", u"One", u"Zero" ]
-        self.m_serial_parameter_checkbit_select = wx.ComboBox(panel, choices=m_checkbit_choices, style=wx.CB_READONLY)
+        self.m_serial_checkbit_select = wx.ComboBox(panel, choices=m_checkbit_choices, style=wx.CB_READONLY)
+        self.m_serial_checkbit_select.SetSelection(0)
 
 
-        self.m_serial_parameter_stopbit_title = wx.StaticText(panel, label=u"停止位：")
+        self.m_serial_stopbit_title = wx.StaticText(panel, label=u"停止位：")
 
         m_stopbit_choices = [ u"1", u"2" ]
-        self.m_serial_parameter_stopbit_select = wx.ComboBox(panel, choices=m_stopbit_choices, style=wx.CB_READONLY)
+        self.m_serial_stopbit_select = wx.ComboBox(panel, choices=m_stopbit_choices, style=wx.CB_READONLY)
+        self.m_serial_stopbit_select.SetSelection(0)
 
-        self.m_hex_send_checkbox = wx.CheckBox(panel, label=u"HEX发送")
-        self.m_hex_show_checkbox = wx.CheckBox(panel, label=u"HEX显示")
+        self.m_serial_open_button = buttons.GenButton(panel, wx.ID_ANY, u"打开串口")
+        self.m_serial_open_button.Enable(True)
 
-        self.m_serial_parameter_open_button = buttons.GenButton(panel, wx.ID_ANY, u"打开串口")
-        self.m_serial_parameter_close_button = buttons.GenButton(panel, wx.ID_ANY, u"关闭串口")
+        self.m_serial_close_button = buttons.GenButton(panel, wx.ID_ANY, u"关闭串口")
+        self.m_serial_close_button.Enable(False)
 
 
         # Move parameter.
-        self.m_move_parameter_area_title = wx.StaticText(panel, label=u"运动参数设置")
+        self.m_action_title = wx.StaticText(panel, label=u"运动参数设置")
 
-        self.m_move_parameter_area = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.LC_HRULES)
-        self.m_move_parameter_area.InsertColumn(0, u"序号", format=wx.LIST_FORMAT_LEFT)
-        self.m_move_parameter_area.InsertColumn(1, u"运动类型", format=wx.LIST_FORMAT_LEFT)
-        self.m_move_parameter_area.InsertColumn(2, u"运动参数", format=wx.LIST_FORMAT_LEFT)
+        self.m_action_list = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.LC_HRULES)
+        self.m_action_list.InsertColumn(0, u"序号", format=wx.LIST_FORMAT_LEFT)
+        self.m_action_list.InsertColumn(1, u"运动类型", format=wx.LIST_FORMAT_LEFT)
+        self.m_action_list.InsertColumn(2, u"运动参数", format=wx.LIST_FORMAT_LEFT)
 
-        self.m_move_parameter_motor_step_select_title = wx.StaticText(panel, label=u"电机步长：")
+        self.m_action_motor_step_select_title = wx.StaticText(panel, label=u"电机步长：")
 
         m_motor_step_choices = [ u"2.4", u"1.557" ]
-        self.m_move_parameter_motor_step_select = wx.ComboBox(panel, choices=m_motor_step_choices, style=wx.CB_READONLY)
+        self.m_action_motor_step_select = wx.ComboBox(panel, choices=m_motor_step_choices, style=wx.CB_READONLY)
+        self.m_action_motor_step_select.SetSelection(0)
 
-        self.m_move_parameter_up_button = wx.Button(panel, label=u"上移")
-        self.m_move_parameter_down_button = wx.Button(panel, label=u"下移")
-        self.m_move_parameter_delete_button = wx.Button(panel, label=u"删除")
-        self.m_move_parameter_edit_button = wx.Button(panel, label=u"编辑")
+        self.m_action_up_button = wx.Button(panel, label=u"上移")
+        self.m_action_down_button = wx.Button(panel, label=u"下移")
+        self.m_action_delete_button = wx.Button(panel, label=u"删除")
+        self.m_action_edit_button = wx.Button(panel, label=u"编辑")
 
-        self.m_move_parameter_add_button = wx.Button(panel, label=u"添加运动")
-        self.m_move_parameter_save_button = wx.Button(panel, label=u"保存运动")
-        self.m_move_parameter_load_button = wx.Button(panel, label=u"载入运动")
-        self.m_move_parameter_send_button = wx.Button(panel, label=u"发送HEX指令")
+        self.m_action_add_button = wx.Button(panel, label=u"添加运动")
+        self.m_action_save_button = wx.Button(panel, label=u"保存运动")
+        self.m_action_load_button = wx.Button(panel, label=u"载入运动")
+        self.m_action_send_button = wx.Button(panel, label=u"发送HEX指令")
 
         # Program operation.
         self.m_program_exit_button = wx.Button(panel, label=u"退出程序")
 
 
         # Arrangement.
-        left_hbox11 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox11.Add(self.m_recieve_area_title, 1, wx.ALIGN_BOTTOM)
-
-        left_hbox12 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox12.Add(self.m_recieve_area, 1, wx.EXPAND)
-
-        left_vbox131 = wx.BoxSizer(wx.VERTICAL)
-        left_vbox131.Add(self.m_recieve_area_clear_button, 0, wx.ALIGN_RIGHT)
-
-        left_hbox13 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox13.Add(left_vbox131, 1, wx.EXPAND)
-
-        left_hbox21 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox21.Add(self.m_send_area_title, 1, wx.ALIGN_BOTTOM)
-
-        left_hbox22 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox22.Add(self.m_send_area, 1, wx.EXPAND)
-
-        left_hbox231 = wx.BoxSizer(wx.VERTICAL)
-        left_hbox231.Add(self.m_send_area_clear_button, 0, wx.ALIGN_RIGHT)
-
-        left_hbox23 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox23.Add(left_hbox231, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        left_hbox24 = wx.BoxSizer(wx.HORIZONTAL)
-        left_hbox24.Add(self.m_send_input, 1, wx.ALIGN_CENTER_VERTICAL)
-        left_hbox24.Add(self.m_send_button, 0, wx.ALIGN_CENTER_VERTICAL)
-
-        left_vbox = wx.BoxSizer(wx.VERTICAL)
-        left_vbox.Add(left_hbox11, 1, wx.EXPAND)
-        left_vbox.Add(left_hbox12, 6, wx.EXPAND)
-        left_vbox.Add(left_hbox13, 1, wx.EXPAND)
-        left_vbox.Add(left_hbox21, 1, wx.EXPAND)
-        left_vbox.Add(left_hbox22, 5, wx.EXPAND)
-        left_vbox.Add(left_hbox23, 1, wx.EXPAND)
-        left_vbox.Add(left_hbox24, 1, wx.EXPAND)
-
-        right_hbox11 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox11.Add(self.m_serial_parameter_title, 0, wx.ALIGN_BOTTOM)
-
-        right_vbox12111 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox12111.Add(self.m_serial_parameter_com_title, 0)
-        right_vbox12112 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox12112.Add(self.m_serial_parameter_com_select, 0, wx.EXPAND)
-        right_hbox1211 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox1211.Add(right_vbox12111, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox1211.Add(right_vbox12112, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        right_vbox12121 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox12121.Add(self.m_serial_parameter_bitrate_title, 0)
-        right_vbox12122 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox12122.Add(self.m_serial_parameter_bitrate_select, 0, wx.EXPAND)
-        right_hbox1212 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox1212.Add(right_vbox12121, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox1212.Add(right_vbox12122, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        right_vbox12131 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox12131.Add(self.m_serial_parameter_databit_title, 0)
-        right_vbox12132 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox12132.Add(self.m_serial_parameter_databit_select, 0, wx.EXPAND)
-        right_hbox1213 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox1213.Add(right_vbox12131, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox1213.Add(right_vbox12132, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        right_vbox12141 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox12141.Add(self.m_serial_parameter_stopbit_title, 0)
-        right_vbox12142 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox12142.Add(self.m_serial_parameter_stopbit_select, 0, wx.EXPAND)
-        right_hbox1214 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox1214.Add(right_vbox12141, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox1214.Add(right_vbox12142, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        right_vbox12151 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox12151.Add(self.m_serial_parameter_checkbit_title, 0)
-        right_vbox12152 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox12152.Add(self.m_serial_parameter_checkbit_select, 0, wx.EXPAND)
-        right_hbox1215 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox1215.Add(right_vbox12151, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox1215.Add(right_vbox12152, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        right_vbox121 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox121.Add(right_hbox1211, 1, wx.EXPAND)
-        right_vbox121.Add(right_hbox1212, 1, wx.EXPAND)
-        right_vbox121.Add(right_hbox1213, 1, wx.EXPAND)
-        right_vbox121.Add(right_hbox1214, 1, wx.EXPAND)
-        right_vbox121.Add(right_hbox1215, 1, wx.EXPAND)
+        box_recieve = wx.GridBagSizer()
+        box_recieve.Add(self.m_recieve_title,           (0, 0), (1, 2), wx.ALIGN_BOTTOM | wx.ALIGN_LEFT)
+        box_recieve.Add(self.m_recieve_area,            (1, 0), (1, 2), wx.EXPAND)
+        box_recieve.Add(self.m_hex_show_checkbox,       (2, 0), (1, 1), wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_LEFT)
+        box_recieve.Add(self.m_recieve_clear_button,    (2, 1), (1, 1), wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
+        box_recieve.AddGrowableRow(1, 1)
+        box_recieve.AddGrowableCol(0, 1)
+        box_recieve.AddGrowableCol(1, 1)
 
 
-        right_vbox1221 = wx.BoxSizer(wx.HORIZONTAL)
-        right_vbox1221.Add(self.m_hex_show_checkbox, 1, wx.ALIGN_CENTER_VERTICAL)
+        box_send = wx.GridBagSizer()
+        box_send.Add(self.m_send_title,         (0, 0), (1, 6), wx.ALIGN_BOTTOM | wx.ALIGN_LEFT)
+        box_send.Add(self.m_send_area,          (1, 0), (1, 6), wx.EXPAND)
+        box_send.Add(self.m_hex_send_checkbox,  (2, 0), (1, 3), wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_LEFT)
+        box_send.Add(self.m_send_clear_button,  (2, 3), (1, 3), wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
+        box_send.Add(self.m_send_input,         (3, 0), (1, 5), wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+        box_send.Add(self.m_send_button,        (3, 5), (1, 1), wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
+        box_send.AddGrowableRow(1, 1)
+        box_send.AddGrowableCol(0, 1)
+        box_send.AddGrowableCol(1, 1)
+        box_send.AddGrowableCol(2, 1)
+        box_send.AddGrowableCol(3, 1)
+        box_send.AddGrowableCol(4, 1)
+        box_send.AddGrowableCol(5, 1)
 
-        right_vbox1222 = wx.BoxSizer(wx.HORIZONTAL)
-        right_vbox1222.Add(self.m_hex_send_checkbox, 1, wx.ALIGN_CENTER_VERTICAL)
+        box_serial_parameter_com = wx.BoxSizer(wx.HORIZONTAL)
+        box_serial_parameter_com.Add(self.m_serial_com_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        box_serial_parameter_com.Add(self.m_serial_com_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
-        right_vbox1223 = wx.BoxSizer(wx.HORIZONTAL)
-        right_vbox1223.Add(self.m_serial_parameter_open_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        box_serial_parameter_bitrate = wx.BoxSizer(wx.HORIZONTAL)
+        box_serial_parameter_bitrate.Add(self.m_serial_bitrate_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        box_serial_parameter_bitrate.Add(self.m_serial_bitrate_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
-        right_vbox1224 = wx.BoxSizer(wx.HORIZONTAL)
-        right_vbox1224.Add(self.m_serial_parameter_close_button, 1, wx.ALIGN_CENTER_VERTICAL)
+        box_serial_parameter_databit = wx.BoxSizer(wx.HORIZONTAL)
+        box_serial_parameter_databit.Add(self.m_serial_databit_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        box_serial_parameter_databit.Add(self.m_serial_databit_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
+        box_serial_parameter_stopbit = wx.BoxSizer(wx.HORIZONTAL)
+        box_serial_parameter_stopbit.Add(self.m_serial_stopbit_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        box_serial_parameter_stopbit.Add(self.m_serial_stopbit_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
-        right_vbox122 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox122.Add(right_vbox1221, 1, wx.ALIGN_CENTER_HORIZONTAL)
-        right_vbox122.Add(right_vbox1222, 1, wx.ALIGN_CENTER_HORIZONTAL)
-        right_vbox122.Add(right_vbox1223, 1, wx.ALIGN_CENTER_HORIZONTAL)
-        right_vbox122.Add(right_vbox1224, 1, wx.ALIGN_CENTER_HORIZONTAL)
+        box_serial_parameter_checkbit = wx.BoxSizer(wx.HORIZONTAL)
+        box_serial_parameter_checkbit.Add(self.m_serial_checkbit_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        box_serial_parameter_checkbit.Add(self.m_serial_checkbit_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
-        right_hbox12 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox12.Add(right_vbox121, 1, wx.EXPAND)
-        right_hbox12.Add(right_vbox122, 1, wx.EXPAND)
+        box_serial_parameter = wx.BoxSizer(wx.VERTICAL)
+        box_serial_parameter.Add(box_serial_parameter_com, 1, wx.EXPAND)
+        box_serial_parameter.Add(box_serial_parameter_bitrate, 1, wx.EXPAND)
+        box_serial_parameter.Add(box_serial_parameter_databit, 1, wx.EXPAND)
+        box_serial_parameter.Add(box_serial_parameter_stopbit, 1, wx.EXPAND)
+        box_serial_parameter.Add(box_serial_parameter_checkbit, 1, wx.EXPAND)
 
-        right_hbox21 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox21.Add(self.m_move_parameter_area_title, 0, wx.ALIGN_BOTTOM)
+        box_serial_serial = wx.GridSizer(3, 1)
+        box_serial_serial.Add(self.m_serial_open_button, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL)
+        box_serial_serial.Add(self.m_serial_close_button, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL)
+        box_serial_serial.Add(self.m_program_exit_button, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_CENTER_HORIZONTAL)
 
-        right_hbox22 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox22.Add(self.m_move_parameter_area, 1, wx.EXPAND)
-
-        right_hbox231 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox231.Add(self.m_move_parameter_motor_step_select_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox231.Add(self.m_move_parameter_motor_step_select, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        right_vbox231 = wx.BoxSizer(wx.VERTICAL)
-        right_vbox231.Add(right_hbox231, 1, wx.ALIGN_RIGHT)
-
-        right_hbox23 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox23.Add(right_vbox231, 1, wx.EXPAND)
-
-        right_hbox24 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox24.Add(self.m_move_parameter_up_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox24.Add(self.m_move_parameter_down_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox24.Add(self.m_move_parameter_edit_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox24.Add(self.m_move_parameter_delete_button, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        right_hbox25 = wx.BoxSizer(wx.HORIZONTAL)
-        right_hbox25.Add(self.m_move_parameter_add_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox25.Add(self.m_move_parameter_save_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox25.Add(self.m_move_parameter_load_button, 1, wx.ALIGN_CENTER_VERTICAL)
-        right_hbox25.Add(self.m_move_parameter_send_button, 1, wx.ALIGN_CENTER_VERTICAL)
-
-
-        right_vbox = wx.BoxSizer(wx.VERTICAL)
-        right_vbox.Add(right_hbox11, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox12, 6, wx.EXPAND)
-        right_vbox.Add(right_hbox21, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox22, 5, wx.EXPAND)
-        right_vbox.Add(right_hbox23, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox24, 1, wx.EXPAND)
-        right_vbox.Add(right_hbox25, 1, wx.EXPAND)
-
-        up_hbox = wx.BoxSizer(wx.HORIZONTAL)
-        up_hbox.Add(left_vbox, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
-        up_hbox.Add(right_vbox, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 5)
-
-        bottom_hbox = wx.BoxSizer(wx.HORIZONTAL)
-        bottom_hbox.Add(self.m_program_exit_button, 1)
-
-        main_vbox = wx.BoxSizer(wx.VERTICAL)
-        main_vbox.Add(up_hbox, 1, wx.EXPAND)
-        main_vbox.Add(bottom_hbox, 0)
+        box_serial = wx.GridBagSizer()
+        box_serial.Add(self.m_serial_title,     (0, 0), (1, 2), wx.ALIGN_BOTTOM | wx.ALIGN_LEFT)
+        box_serial.Add(box_serial_parameter,    (1, 0), (1, 1), wx.EXPAND)
+        box_serial.Add(box_serial_serial,       (1, 1), (1, 1), wx.EXPAND)
+        box_serial.AddGrowableRow(1, 1)
+        box_serial.AddGrowableCol(0, 1)
+        box_serial.AddGrowableCol(1, 1)
 
 
-        panel.SetSizer(main_vbox)
+        box_action = wx.GridBagSizer()
+        box_action.Add(self.m_action_title,                     (0, 0), (1, 4), wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_VERTICAL)
+        box_action.Add(self.m_action_list,                      (1, 0), (1, 4), wx.EXPAND)
+        box_action.Add(self.m_action_motor_step_select_title,   (2, 2), (1, 1), wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_LEFT)
+        box_action.Add(self.m_action_motor_step_select,         (2, 3), (1, 1), wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+        box_action.Add(self.m_action_up_button,                 (3, 0), (1, 1), wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+        box_action.Add(self.m_action_down_button,               (3, 1), (1, 1), wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+        box_action.Add(self.m_action_edit_button,               (3, 2), (1, 1), wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+        box_action.Add(self.m_action_delete_button,             (3, 3), (1, 1), wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+        box_action.Add(self.m_action_add_button,                (4, 0), (1, 1), wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+        box_action.Add(self.m_action_save_button,               (4, 1), (1, 1), wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+        box_action.Add(self.m_action_load_button,               (4, 2), (1, 1), wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+        box_action.Add(self.m_action_send_button,               (4, 3), (1, 1), wx.EXPAND | wx.ALIGN_CENTER_VERTICAL)
+        box_action.AddGrowableRow(1, 1)
+        box_action.AddGrowableCol(0, 1)
+        box_action.AddGrowableCol(1, 1)
+        box_action.AddGrowableCol(2, 1)
+        box_action.AddGrowableCol(3, 1)
+
+        main_box = wx.GridSizer(0, 2)
+        main_box.Add(box_recieve,   0, wx.EXPAND | wx.ALL, 5)
+        main_box.Add(box_serial,    0, wx.EXPAND | wx.ALL, 5)
+        main_box.Add(box_send,      0, wx.EXPAND | wx.ALL, 5)
+        main_box.Add(box_action,    0, wx.EXPAND | wx.ALL, 5)
+
+
+        panel.SetSizer(main_box)
         panel.Layout()
         panel.Fit()
         #panel.Centre()
@@ -513,100 +441,103 @@ class serial_frame(wx.Frame):
 
 
         # Connect Events
-        self.m_recieve_area_clear_button.Bind(wx.EVT_BUTTON, self.on_recieve_area_clear_button_clicked)
+        self.m_recieve_clear_button.Bind(wx.EVT_BUTTON, self.on_recieve_clear_button_clicked)
 
-        self.m_send_area_clear_button.Bind(wx.EVT_BUTTON, self.on_send_area_clear_button_clicked)
+        self.m_send_clear_button.Bind(wx.EVT_BUTTON, self.on_send_clear_button_clicked)
         self.m_send_button.Bind(wx.EVT_BUTTON, self.on_send_button_clicked)
 
-        self.m_serial_parameter_open_button.Bind(wx.EVT_BUTTON, self.on_serial_parameter_open_button_clicked)
-        self.m_serial_parameter_close_button.Bind(wx.EVT_BUTTON, self.on_serial_parameter_close_button_clicked)
+        self.m_serial_open_button.Bind(wx.EVT_BUTTON, self.on_serial_open_button_clicked)
+        self.m_serial_close_button.Bind(wx.EVT_BUTTON, self.on_serial_close_button_clicked)
 
 
-        self.m_move_parameter_up_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_up_button_clicked)
-        self.m_move_parameter_down_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_down_button_clicked)
-        self.m_move_parameter_edit_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_edit_button_clicked)
-        self.m_move_parameter_delete_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_delete_button_clicked)
+        self.m_action_up_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_up_button_clicked)
+        self.m_action_down_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_down_button_clicked)
+        self.m_action_edit_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_edit_button_clicked)
+        self.m_action_delete_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_delete_button_clicked)
 
-        self.m_move_parameter_add_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_add_button_clicked)
-        self.m_move_parameter_save_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_save_button_clicked)
-        self.m_move_parameter_load_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_load_button_clicked)
-        self.m_move_parameter_send_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_send_button_clicked)
+        self.m_action_add_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_add_button_clicked)
+        self.m_action_save_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_save_button_clicked)
+        self.m_action_load_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_load_button_clicked)
+        self.m_action_send_button.Bind(wx.EVT_BUTTON, self.on_move_parameter_send_button_clicked)
 
 
         self.m_program_exit_button.Bind(wx.EVT_BUTTON, self.on_program_exit_button_clicked)
 
 
     # Recieve area update
-    def on_recieve_area_update(self, msg):
-        s = msg.data
+    def on_recieve_area_update(self, data):
+        s = data
         if self.m_hex_show_checkbox.IsChecked():
             s_trans = []
             for c in s:
                 s_trans.append('%02X' % ord(c))
 
             #s = ''.join('%02X' %i for i in [ord(c) for c in s])
+
+            self.m_recieve_area.AppendText(''.join(s_trans))
         else:
-            s_trans = []
-            for i in range(0, len(s)/2):
-                s_trans.append(chr(int(s[i*2:i*2+2], 16)))
+            self.m_recieve_area.AppendText(s)
+
+
+            #s_trans = []
+            #for i in range(0, len(s)/2):
+            #    s_trans.append(chr(int(s[i*2:i*2+2], 16)))
 
             #s = ''.join([chr(int(i,16)) for i in [s[i*2:i*2+2] for i in range(0,len(s)/2)]])
 
-        self.m_recieve_area.AppendText(''.join(s_trans))
-
 
     # Recieve area.
-    def on_recieve_area_clear_button_clicked(self, event):
+    def on_recieve_clear_button_clicked(self, event):
         self.m_recieve_area.Clear()
 
     # Send area.
-    def on_send_area_clear_button_clicked(self, event):
+    def on_send_clear_button_clicked(self, event):
         self.m_send_area.Clear()
 
     def on_send_button_clicked(self, event):
         try:
             if self.m_hex_send_checkbox.IsChecked():
                 self.ser.write(self.m_send_input.GetValue().decode("hex"))
-                self.m_send_area.AppendText(self.m_send_input.GetValue("hex"))
             else:
                 self.ser.write(self.m_send_input.GetValue())
-                self.m_send_area.AppendText(self.m_send_input.GetValue())
 
         except Exception, e:
-            print '[serial_frame\t] Write Fail!!',e
+            print '[serial_frame\t] Write Fail!!', e
 
         else:
-            print '[serial_frame\t] Write Succeed!',e
+            print '[serial_frame\t] Write Succeed!'
+            self.m_send_area.AppendText(self.m_send_input.GetValue())
             self.m_send_input.Clear()
 
 
     # Parameter setting area.
-    def on_serial_parameter_open_button_clicked(self, event):
+    def on_serial_open_button_clicked(self, event):
         if not self.ser.isOpen():
             try:
                 self.ser.timeout = 1
                 self.ser.xonxoff = 0
-                self.ser.port = self.m_serial_parameter_com_select.GetValue()
-                self.ser.parity = self.m_serial_parameter_checkbit_select.GetValue()[0]
-                self.ser.baudrate = int(self.m_serial_parameter_bitrate_select.GetValue())
-                self.ser.bytesize = int(self.m_serial_parameter_databit_select.GetValue())
-                self.ser.stopbits = int(self.m_serial_parameter_stopbit_select.GetValue())
+                self.ser.port = self.m_serial_com_select.GetValue()
+                self.ser.parity = self.m_serial_checkbit_select.GetValue()[0]
+                self.ser.baudrate = int(self.m_serial_bitrate_select.GetValue())
+                self.ser.bytesize = int(self.m_serial_databit_select.GetValue())
+                self.ser.stopbits = int(self.m_serial_stopbit_select.GetValue())
                 self.ser.open()
             except Exception, e:
-                print '[serial_frame\t] COMM Open Fail!!',e
+                print '[serial_frame\t] COMM Open Fail!!', e
 
             else:
-                self.m_serial_parameter_close_button.Enable(True)
+                self.m_serial_open_button.Enable(False)
+                self.m_serial_close_button.Enable(True)
         else:
             pass
 
             #self.ser.close()
             #while self.ser.isOpen(): pass
 
-            #self.m_serial_parameter_open_button.SetLabel(u'打开串口')
+            #self.m_serial_open_button.SetLabel(u'打开串口')
             #self.m_imgStat.SetBitmap(Img_inclosing.getBitmap())
 
-    def on_serial_parameter_close_button_clicked(self, event):
+    def on_serial_close_button_clicked(self, event):
         if self.ser.isOpen():
             try:
                 self.ser.close()
@@ -617,7 +548,8 @@ class serial_frame(wx.Frame):
                 print '[serial_frame\t] COMM close Fail!!', e
 
             else:
-                self.m_serial_parameter_open_button.Enable(True)
+                self.m_serial_open_button.Enable(True)
+                self.m_serial_close_button.Enable(False)
 
         else:
             pass
@@ -625,19 +557,19 @@ class serial_frame(wx.Frame):
 
     # Move designing area.
     def on_move_parameter_up_button_clicked(self, event):
-        #action_index = self.m_move_parameter_area.GetFocusedItem()
+        #action_list_index = self.m_action_list.GetFocusedItem()
         pass
 
     def on_move_parameter_down_button_clicked(self, event):
-        #action_index = self.m_move_parameter_area.GetFocusedItem()
+        #action_list_index = self.m_action_list.GetFocusedItem()
         pass
 
     def on_move_parameter_edit_button_clicked(self, event):
         pass
 
     def on_move_parameter_delete_button_clicked(self, event):
-        action_index = self.m_move_parameter_area.GetFocusedItem()
-        self.m_move_parameter_area.DeleteItem(action_index)
+        action_index = self.m_action_list.GetFocusedItem()
+        self.m_action_list.DeleteItem(action_index)
 
         del self.actions[action_index]
 
@@ -657,13 +589,13 @@ class serial_frame(wx.Frame):
                 value_list.append(one_dict['name'] + '=' + value)
 
             self.actions.append(action)
-            action_index = self.m_move_parameter_area.GetItemCount()
-            self.m_move_parameter_area.InsertStringItem(action_index, str(action_index + 1))
-            self.m_move_parameter_area.SetStringItem(action_index, 1, function['verbose_name'])
-            self.m_move_parameter_area.SetStringItem(action_index, 2, ', '.join(value_list))
-            self.m_move_parameter_area.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-            self.m_move_parameter_area.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-            self.m_move_parameter_area.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+            action_index = self.m_action_list.GetItemCount()
+            self.m_action_list.InsertStringItem(action_index, str(action_index + 1))
+            self.m_action_list.SetStringItem(action_index, 1, function['verbose_name'])
+            self.m_action_list.SetStringItem(action_index, 2, ', '.join(value_list))
+            self.m_action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+            self.m_action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+            self.m_action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
 
         dia.Destroy()
 
@@ -671,7 +603,6 @@ class serial_frame(wx.Frame):
         dlg = wx.FileDialog(self, message=u"保存文件", defaultDir=os.getcwd(), defaultFile="", wildcard='*', style=wx.SAVE)
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
-            #self.SetStatusText(u'你选择了: %s\n' % dlg.GetPath())
 
             #print(self.actions)
             with io.open(path, 'w', encoding='utf8') as f:
@@ -685,13 +616,11 @@ class serial_frame(wx.Frame):
         dlg = wx.FileDialog(self, u"选择文件", os.getcwd(), "", "*.*", wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
-            #mypath = os.path.basename(path)
-            #self.SetStatusText(u"你选择了: %s" % mypath)
 
             with io.open(path, 'r') as f:
                 self.actions = json.load(f)
 
-            self.m_move_parameter_area.DeleteAllItems()
+            self.m_action_list.DeleteAllItems()
 
             function_names = []
             for one_dict in self.functions:
@@ -704,13 +633,13 @@ class serial_frame(wx.Frame):
                 for i in action[1:]:
                     value_list.append(self.functions[index]['parameter']['name'] + '=' + action[i])
 
-                action_index = self.m_move_parameter_area.GetItemCount()
-                self.m_move_parameter_area.InsertStringItem(action_index, str(action_index + 1))
-                self.m_move_parameter_area.SetStringItem(action_index, 1, self.functions[index]['parameter']['verbose_name'])
-                self.m_move_parameter_area.SetStringItem(action_index, 2, ', '.join(value_list))
-                self.m_move_parameter_area.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-                self.m_move_parameter_area.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-                self.m_move_parameter_area.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+                action_index = self.m_action_list.GetItemCount()
+                self.m_action_list.InsertStringItem(action_index, str(action_index + 1))
+                self.m_action_list.SetStringItem(action_index, 1, self.functions[index]['parameter']['verbose_name'])
+                self.m_action_list.SetStringItem(action_index, 2, ', '.join(value_list))
+                self.m_action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+                self.m_action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+                self.m_action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
 
         dlg.Destroy()
 
@@ -735,10 +664,11 @@ class serial_frame(wx.Frame):
         try:
             self.ser.write(''.join(real_commands).decode("hex"))
         except Exception, e:
-            print '[serial_frame\t] Write Fail!!',e
+            print '[serial_frame\t] Write Fail!!', e
 
         else:
-            print '[serial_frame\t] Write succeed!!',e
+            print '[serial_frame\t] Write succeed!'
+            
 
 
     # Program exit.
@@ -773,7 +703,7 @@ class serial_frame(wx.Frame):
     '''
 
     def move_distance(self, parameter):
-        motor_step  = float(self.m_move_parameter_motor_step_select.GetValue())
+        motor_step  = float(self.m_action_motor_step_select.GetValue())
         direct      = int(parameter[1])
         speed       = int(parameter[2])
         distance    = float(parameter[3])
@@ -789,8 +719,8 @@ class serial_frame(wx.Frame):
         a5 = ''
 
         total = int(round(distance / motor_step))
-        cycle = int(total / 255)
-        left =  total - cycle * 255
+        cycle = int(total / 256)
+        left =  total - cycle * 256
 
         if cycle > 0:
             if left != 0:
@@ -813,7 +743,7 @@ class serial_frame(wx.Frame):
             return [a1, a2, a3, a4, a5, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,]
 
     def classical_move(self, parameter):
-        motor_step      = float(self.m_move_parameter_motor_step_select.GetValue())
+        motor_step      = float(self.m_action_motor_step_select.GetValue())
         direct          = int(parameter[1])
         speed           = int(parameter[2])
         step_distance   = float(parameter[3])
@@ -834,7 +764,7 @@ class serial_frame(wx.Frame):
         return [a1, a2, a3, a4, a5, a1, self.DEFAULT_SPEED, self.MIN_DISTANCE, self.MIN_PERIOD,]
 
     def pause(self, parameter):
-        motor_step  = float(self.m_move_parameter_motor_step_select.GetValue())
+        motor_step  = float(self.m_action_motor_step_select.GetValue())
         time        = int(parameter[1])
 
         a1 = '0'
@@ -879,7 +809,7 @@ class serial_thread(threading.Thread):
         while not self.event_stop.is_set():
             if self.ser.isOpen() and self.ser.inWaiting():
                 text = self.ser.read(self.ser.inWaiting())
-                wx.CallAfter(pub.sendMessage('update', text))
+                wx.CallAfter(pub.sendMessage, 'update', data=text)
 
             time.sleep(0.01)
 
