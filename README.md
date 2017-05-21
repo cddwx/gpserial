@@ -41,11 +41,8 @@ A graphical user interface (GUI) serial communication program with combination o
     The numerical value range of parameter limits the value that applied to the device. On the other hand, the range of the parameter also need to be controled to fit the tolerance of the device. To decide the practical value range of the parameter, both device tolerance and parameter must be considered. For example, we first look at numerical value of the natural parameter with the tolerance of the device, because it is the direct numerical to tolerance of the device. After deciding the practical value range of natural parameter, we convert it to the practical value range of the code parameter. If numerical value range of natural parameter exceeds tolerance of the device, a maximum or minimum value must be setted, and if it is included in tolerance of the device, it's OK..
 
     min_interval: pulse interval that applied to motor. The value is generally biger than 1 ms.
-
     min_single_distance: the minimum continuous distance the motor move. The value is generally (2 * motor_step) um.
-
     min_pause_time: the minimum time for pause. The value is generally 258 ms.
-
     min_count: the minimum time for cycle. The value is generally 1.
 
 
