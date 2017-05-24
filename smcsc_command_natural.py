@@ -25,12 +25,12 @@ class smcsc_command_natural:
 
     def convert(self, command):
         if command == []:
-            print "[Error   ] Command is empty."
-            print '''Availiable commands:
-VD {step} {direction} {speed} {distance}
-DELAY {interval}
-ALT {step} {direction} {speed} {distance} {interval} {count}'''
-            return False
+            error = '''Command is empty.
+    Availiable commands:
+    VD {step} {direction} {speed} {distance}
+    DELAY {interval}
+    ALT {step} {direction} {speed} {distance} {interval} {count}'''
+            raise Exception(error)
 
         if command[0] == "VD":
             '''
@@ -40,37 +40,39 @@ ALT {step} {direction} {speed} {distance} {interval} {count}'''
             distance        int     um      0--f(step * 255) OR 0--f(step * 65535)
             '''
             if len(command[1:]) != 4:
-                print "[Error   ] The number of parameter is wrong."
-                print '''Parameters:
-step            float   um
-direction       int     1       1, 0
-speed           float   um/s    f(step / 65536 * 1000)--f(step / 4 * 1000) OR f(step / 3.0 * 1000)--f(step / 0.2 * 1000)
-distance        int     um      0--f(step * 255) OR 0--f(step * 65535)'''
-                return False
+                error = '''In "VD", the number of parameter is wrong
+    Parameters:
+    step            float   um
+    direction       int     1       1, 0
+    speed           float   um/s    f(step / 65536 * 1000)--f(step / 4 * 1000) OR f(step / 3.0 * 1000)--f(step / 0.2 * 1000)
+    distance        int     um      0--f(step * 255) OR 0--f(step * 65535)'''
+                raise Exception(error)
 
             if ((not self.is_int(command[1])) and (not self.is_float(command[1]))):
-                print "[Error   ] The step is wrong."
-                return False
+                error = '''In "VD", the step is wrong.'''
+                raise Exception(error)
 
             if command[2] not in ["1", "0"]:
-                print "[Error   ] The direction is wrong."
-                return False
+                error = '''In "VD", the direction is wrong.'''
+                raise Exception(error)
 
             slow_begin = (Decimal(command[1]) / 65536 * 1000).quantize(Decimal("0.001"), rounding=ROUND_UP)
             slow_end = (Decimal(command[1]) / 4 * 1000).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             fast_begin = (Decimal(command[1]) / 3 * 1000).quantize(Decimal("0.001"), rounding=ROUND_UP)
             fast_end = (Decimal(command[1]) / Decimal("0.2") * 1000).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             if ((not self.is_int(command[3])) and (not self.is_float(command[3]))) or ((Decimal(command[3]) < slow_begin) or ((Decimal(command[3]) > slow_end) and (Decimal(command[3]) < fast_begin)) or (Decimal(command[3]) > fast_end)):
-                print "[Error   ] The speed is wrong."
-                print "The range for current step is %s -- %s and %s -- %s." % (slow_begin, slow_end, fast_begin, fast_end)
-                return False
+                error_tmp = '''In "VD", the speed is wrong
+    The range for current step is %s -- %s and %s -- %s.'''
+                error = error_tmp  % (slow_begin, slow_end, fast_begin, fast_end)
+                raise Exception(error)
 
             little_end = (Decimal(command[1]) * 255).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             more_end = (Decimal(command[1]) * 65535).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             if (not self.is_int(command[4])) or (((Decimal(command[3]) <= slow_end) and ((int(command[4]) < 0) or (int(command[4]) > little_end))) or ((Decimal(command[3]) >= fast_begin) and ((int(command[4]) < 0) or (int(command[4]) > more_end)))):
-                print "[Error   ] The distance is wrong."
-                print "The range for current step is %s -- %s when speed at %s -- %s and %s -- %s when speed at %s -- %s." % (0, little_end, slow_begin, slow_end, 0, more_end, fast_begin, fast_end)
-                return False
+                error_tmp = '''In "VD", the distance is wrong
+    The range for current step is %s -- %s when speed at %s -- %s and %s -- %s when speed at %s -- %s.'''
+                error = error_tmp  % (0, little_end, slow_begin, slow_end, 0, more_end, fast_begin, fast_end)
+                raise Exception(error)
 
             step = Decimal(command[1])
             direction = int(command[2])
@@ -178,14 +180,14 @@ distance        int     um      0--f(step * 255) OR 0--f(step * 65535)'''
             '''
 
             if len(command[1:]) != 1:
-                print "[Error   ] The number of parameter is wrong."
-                print '''Parameters:
-interval    int     ms  0--65535 * 255'''
-                return False
+                error = '''In "DELAY", the number of parameter is wrong
+    Parameters:
+    interval    int     ms  0--65535 * 255'''
+                raise Exception(error)
 
             if (not self.is_int(command[1])) or ((int(command[1]) < 0) or (int(command[1]) > (65535 * 255))):
-                print "[Error   ] The interval is wrong."
-                return False
+                error = '''In "DELAY", the interval is wrong.'''
+                raise Exception(error)
 
             interval = int(command[1])
 
@@ -256,44 +258,46 @@ interval    int     ms  0--65535 * 255'''
             '''
 
             if len(command[1:]) != 6:
-                print "[Error   ] The number of parameter is wrong."
-                print '''Parameters:
-step            float   um
-direction       int     1       1, 0
-speed           float   um/s    f(step / 3.0 * 1000)--f(step / 0.2 * 1000)
-distance        int     um      0--f(step * 255)
-interval        int     ms      0--65535
-count           int     1       0--255'''
-                return False
+                error = '''In "ALT", the number of parameter is wrong
+    Parameters:
+    step            float   um
+    direction       int     1       1, 0
+    speed           float   um/s    f(step / 3.0 * 1000)--f(step / 0.2 * 1000)
+    distance        int     um      0--f(step * 255)
+    interval        int     ms      0--65535
+    count           int     1       0--255'''
+                raise Exception(error)
 
             if ((not self.is_int(command[1])) and (not self.is_float(command[1]))):
-                print "[Error   ] The step is wrong."
-                return False
+                error = '''In "ALT", the step is wrong.'''
+                raise Exception(error)
 
             if command[2] not in ["1", "0"]:
-                print "[Error   ] The direction is wrong."
-                return False
+                error = '''In "ALT", the direction is wrong.'''
+                raise Exception(error)
 
             fast_begin = (Decimal(command[1]) / 3 * 1000).quantize(Decimal("0.001"), rounding=ROUND_UP)
             fast_end = (Decimal(command[1]) / Decimal("0.2") * 1000).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             if ((not self.is_int(command[3])) and (not self.is_float(command[3]))) or ((Decimal(command[3]) < fast_begin) or (Decimal(command[3]) > fast_end)):
-                print "[Error   ] The speed is wrong."
-                print "The range for current step is %s -- %s." % (fast_begin, fast_end)
-                return False
+                error_tmp = '''In "ALT", the speed is wrong
+    The range for current step is %s -- %s.'''
+                error = error_tmp % (fast_begin, fast_end)
+                raise Exception(error)
 
             little_end = (Decimal(command[1]) * 255).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             if (not self.is_int(command[4])) or ((int(command[4]) < 0) or (int(command[4]) > little_end)):
-                print "[Error   ] The distance is wrong."
-                print "The range for current step is %s -- %s." % (0, little_end)
-                return False
+                error_tmp = '''In "ALT", the distance is wrong
+    The range for current step is %s -- %s.'''
+                error = error_tmp % (0, little_end)
+                raise Exception(error)
 
             if (not self.is_int(command[5])) or (int(command[5]) < 0 or int(command[5]) > 65535):
-                print "[Error   ] The interval is wrong."
-                return False
+                error = '''In "ALT", the interval is wrong.'''
+                raise Exception(error)
 
             if (not self.is_int(command[6])) or (int(command[6]) < 0 or int(command[6]) > 255):
-                print "[Error   ] The count is wrong."
-                return False
+                error = '''In "ALT", the count is wrong.'''
+                raise Exception(error)
 
             step = Decimal(command[1])
             direction = int(command[2])
@@ -336,8 +340,8 @@ count           int     1       0--255'''
             return code
 
         else:
-            print "[Error   ] Unknown command."
-            return False
+            error = '''Unknown command.'''
+            raise Exception(error)
 
     def is_int(self, string):
         try:

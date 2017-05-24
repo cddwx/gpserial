@@ -25,12 +25,12 @@ class smcsc_command_short:
 
     def convert(self, command):
         if command == []:
-            print "[Error   ] Command is empty."
-            print '''Availiable commands:
-VD {direction} {interval} {count}
-DELAY {interval}
-ALT {direction} {step_interval} {step_count} {part_interval} {part_count}'''
-            return False
+            error = '''Command is empty
+    Availiable commands:
+    VD {direction} {interval} {count}
+    DELAY {interval}
+    ALT {direction} {step_interval} {step_count} {part_interval} {part_count}'''
+            raise Exception(error)
 
         if command[0] == "VD":
             '''
@@ -39,24 +39,24 @@ ALT {direction} {step_interval} {step_count} {part_interval} {part_count}'''
             count           int     1   0--65535 OR 0--255
             '''
             if len(command[1:]) != 3:
-                print "[Error   ] The number of parameter is wrong."
-                print '''Parameters:
-direction       int     1   1, 0
-interval        float   ms  0.2--3.0 0.2 * N OR 4--65536 N
-count           int     1   0--65535 OR 0--255'''
-                return False
+                error = '''In "VD", the number of parameter is wrong
+    Parameters:
+    direction       int     1   1, 0
+    interval        float   ms  0.2--3.0 0.2 * N OR 4--65536 N
+    count           int     1   0--65535 OR 0--255'''
+                raise Exception(error)
 
             if command[1] not in ["1", "0"]:
-                print "[Error   ] The direction is wrong."
-                return False
+                error = '''In "VD", the direction is wrong.'''
+                raise Exception(error)
 
             if ((not self.is_int(command[2])) and (not self.is_float(command[2]))) or (self.is_float(command[2]) and (((len(command[2]) - (command[2].index(".") + 1)) > 1) or (Decimal(command[2]) < Decimal("0.2") or Decimal(command[2]) > Decimal("3.0")) or (int(Decimal(command[2]) * 10) % 2 != 0))) or (self.is_int(command[2]) and ((int(command[2]) < 1) or (int(command[2]) > 65536))):
-                print "[Error   ] The interval is wrong."
-                return False
+                error = '''In "VD", the interval is wrong.'''
+                raise Exception(error)
 
             if (not self.is_int(command[3])) or ((Decimal(command[2]) <= Decimal("3.0")) and ((int(command[3]) < 0) or int(command[3]) > 65535)) or ((Decimal(command[2]) >= Decimal("4")) and ((int(command[3]) < 0) or int(command[3]) > 255)):
-                print "[Error   ] The count is wrong."
-                return False
+                error = '''In "VD", the count is wrong.'''
+                raise Exception(error)
 
             direction = int(command[1])
             interval = Decimal(command[2])
@@ -148,14 +148,14 @@ count           int     1   0--65535 OR 0--255'''
             '''
 
             if len(command[1:]) != 1:
-                print "[Error   ] The number of parameter is wrong."
-                print '''Parameters:
-interval    int     ms  0--65535 * 255'''
-                return False
+                error = '''In "DELAY", the number of parameter is wrong
+    Parameters:
+    interval    int     ms  0--65535 * 255'''
+                raise Exception(error)
 
             if (not self.is_int(command[1])) or ((int(command[1]) < 0) or (int(command[1]) > (65535 * 255))):
-                print "[Error   ] The interval is wrong."
-                return False
+                error = '''In "DELAY", the interval is wrong.'''
+                raise Exception(error)
 
             interval = int(command[1])
 
@@ -224,34 +224,34 @@ interval    int     ms  0--65535 * 255'''
             part_count      int     1   0--255
             '''
             if len(command[1:]) != 5:
-                print "[Error   ] The number of parameter is wrong."
-                print '''Parameters:
-direction       int     1   1, 0
-step_interval   float   ms  0.2--3.0 0.2 * N
-step_count      int     1   0--255
-part_interval   int     ms  0--65535
-part_count      int     1   0--255'''
-                return False
+                error = '''In "ALT", the number of parameter is wrong
+    Parameters:
+    direction       int     1   1, 0
+    step_interval   float   ms  0.2--3.0 0.2 * N
+    step_count      int     1   0--255
+    part_interval   int     ms  0--65535
+    part_count      int     1   0--255'''
+                raise Exception(error)
 
             if command[1] not in ["1", "0"]:
-                print "[Error   ] The direction is wrong."
-                return False
+                error = '''In "ALT", the direction is wrong.'''
+                raise Exception(error)
 
             if ((not self.is_int(command[2])) and (not self.is_float(command[2]))) or (self.is_float(command[2]) and (((len(command[2]) - (command[2].index(".") + 1)) > 1) or (Decimal(command[2]) < Decimal("0.2") or Decimal(command[2]) > Decimal("3.0")) or (int(Decimal(command[2]) * 10) % 2 != 0))) or (self.is_int(command[2]) and ((int(command[2]) < 1) or (int(command[2]) > 3))):
-                print "[Error   ] The step_interval is wrong."
-                return False
+                error = '''In "ALT", the step_interval is wrong.'''
+                raise Exception(error)
 
             if (not self.is_int(command[3])) or (int(command[3]) < 0 or int(command[3]) > 255):
-                print "[Error   ] The step_count is wrong."
-                return False
+                error = '''In "ALT", the step_count is wrong.'''
+                raise Exception(error)
 
             if (not self.is_int(command[4])) or (int(command[4]) < 0 or int(command[4]) > 65535):
-                print "[Error   ] The part_interval is wrong."
-                return False
+                error = '''In "ALT", the part_interval is wrong.'''
+                raise Exception(error)
 
             if (not self.is_int(command[5])) or (int(command[5]) < 0 or int(command[5]) > 255):
-                print "[Error   ] The part_count is wrong."
-                return False
+                error = '''In "ALT", the part_count is wrong.'''
+                raise Exception(error)
 
             direction = int(command[1])
             step_interval = Decimal(command[2])
@@ -280,8 +280,8 @@ part_count      int     1   0--255'''
             return code
 
         else:
-            print "[Error   ] Unknown command."
-            return False
+            error = '''Unknown command.'''
+            raise Exception(error)
 
     def is_int(self, string):
         try:

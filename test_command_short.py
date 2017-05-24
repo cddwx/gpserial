@@ -33,8 +33,12 @@ commands = [
 for command in commands:
     print command[0]
     print command[1]
-    if parameter_converter.convert(command[2:]) != False:
+    try:
         print " ".join(parameter_converter.convert(command[2:])) + " (" + " ".join(command[2:]) + ")"
+    except Exception, e:
+        print "[Error   ] ", e
+    else:
+        pass
     print ""
 
 # 命令错误检查测试
@@ -105,6 +109,10 @@ error_check_commands = [
 
 for command in error_check_commands:
     print command[0] + " (" + " ".join(command[1:]) + ")"
-    if parameter_converter.convert(command[1:]) != False:
+    try:
         print parameter_converter.convert(command[1:])
+    except Exception, e:
+        print "[Error   ] ", e
+    else:
+        pass
     print ""

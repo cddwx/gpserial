@@ -7,5 +7,11 @@ from smcsc_command_direct import smcsc_command_direct
 parameter_converter = smcsc_command_direct()
 
 
-if parameter_converter.convert(sys.argv[1:]) != False:
+try:
     print parameter_converter.convert(sys.argv[1:])
+
+except Exception as e:
+    print "[Error   ] ", e
+
+else:
+    pass

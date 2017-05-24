@@ -4,7 +4,7 @@
 import wx
 from wx.lib import buttons
 
-from smcsc_parameter import smcsc_parameter
+from smcsc_command_natural import smcsc_command_natural
 
 class smcsc_frame(wx.Frame):
     def __init__(self, serial_obj, frame_title, com_choices):
@@ -19,6 +19,7 @@ class smcsc_frame(wx.Frame):
 
         self.ser = serial_obj
         self.com_choices = com_choices
+        self.parameter_converter = smcsc_command_natural()
 
         panel = wx.Panel(self)
 
@@ -28,15 +29,18 @@ class smcsc_frame(wx.Frame):
         self.m_recieve_clear_button = wx.Button(panel, label=u"Clear")
 
         # Send objects.
-        self.m_action_title = wx.StaticText(panel, label=u"Hex code send")
+        self.m_action_title = wx.StaticText(panel, label=u"List command send")
 
-        self.m_action_list = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.LC_HRULES)
+        self.m_action_list = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_SINGLE_SEL)
         self.m_action_list.InsertColumn(0, u"Number", format=wx.LIST_FORMAT_LEFT)
         self.m_action_list.InsertColumn(1, u"Command", format=wx.LIST_FORMAT_LEFT)
-        self.m_action_list.InsertColumn(2, u"Parameter", format=wx.LIST_FORMAT_LEFT)
-        self.m_action_list.InsertColumn(3, u"Hex code", format=wx.LIST_FORMAT_LEFT)
+        self.m_action_list.InsertColumn(2, u"Hex code", format=wx.LIST_FORMAT_LEFT)
 
         self.m_action_send_button = wx.Button(panel, label=u"Send")
+
+        self.m_send_title = wx.StaticText(panel, label=u"Single command send")
+        self.m_send_input = wx.TextCtrl(panel)
+        self.m_send_button = wx.Button(panel, label=u"Send")
 
 
         # Serial parameter setting.
@@ -126,7 +130,7 @@ class smcsc_frame(wx.Frame):
         setting_area_parameter_box.Add(setting_area_parameter_checkbit_box, 1, wx.EXPAND)
         setting_area_parameter_box.Add(setting_area_parameter_stopbit_box, 1, wx.EXPAND)
 
-        
+
         setting_area_operate_open_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_operate_open_box.Add(self.m_serial_open_button, 0)
 
@@ -153,6 +157,9 @@ class smcsc_frame(wx.Frame):
         send_area_box.Add(self.m_action_title, 0)
         send_area_box.Add(self.m_action_list, 1, wx.EXPAND)
         send_area_box.Add(self.m_action_send_button, 0)
+        send_area_box.Add(self.m_send_title, 0, wx.TOP, 10)
+        send_area_box.Add(self.m_send_input, 0, wx.EXPAND)
+        send_area_box.Add(self.m_send_button, 0)
         
         write_area_box = wx.BoxSizer(wx.VERTICAL)
         write_area_box.Add(self.m_write_title, 0)
@@ -169,7 +176,7 @@ class smcsc_frame(wx.Frame):
 
         main_box = wx.BoxSizer(wx.VERTICAL)
         main_box.Add(up_box, 1, wx.EXPAND | wx.ALL, 5)
-        main_box.Add(down_box, 1, wx.EXPAND | wx.ALL, 5)
+        main_box.Add(down_box, 2, wx.EXPAND | wx.ALL, 5)
 
         panel.SetSizer(main_box)
         panel.Layout()
@@ -192,6 +199,7 @@ class smcsc_frame(wx.Frame):
         self.m_program_exit_button.Bind(wx.EVT_BUTTON, self.on_program_exit_button_clicked)
 
         self.m_action_send_button.Bind(wx.EVT_BUTTON, self.on_action_send_button_clicked)
+        self.m_send_button.Bind(wx.EVT_BUTTON, self.on_send_button_clicked)
 
         self.m_write_convert_button.Bind(wx.EVT_BUTTON, self.on_write_convert_button_clicked)
 
@@ -219,7 +227,7 @@ class smcsc_frame(wx.Frame):
                 self.ser.bytesize = int(self.m_serial_databit_select.GetValue())
                 self.ser.stopbits = int(self.m_serial_stopbit_select.GetValue())
                 self.ser.open()
-            except Exception, e:
+            except Exception as e:
                 print '[serial_frame\t] COMM Open Fail!', e
 
             else:
@@ -236,7 +244,7 @@ class smcsc_frame(wx.Frame):
                 while self.ser.isOpen():
                     pass
 
-            except Exception, e:
+            except Exception as e:
                 print '[serial_frame\t] COMM close Fail!', e
 
             else:
@@ -251,41 +259,123 @@ class smcsc_frame(wx.Frame):
     def on_program_exit_button_clicked(self, event):
         self.Close()
         print "[serial_fram\t] Frame exit."
-        #self.Destroy()
 
 
     def on_write_convert_button_clicked(self, event):
-        self.m_action_list.ClearAll()
-        parameter_converter = smcsc_parameter()
+        self.m_action_list.DeleteAllItems()
         
-        command_text = self.m_write_area.GetValue()
-        command_list = command_text.splitlines()
-        action_index = 0
-        for command in command_list:
-            single_command_list = command.split()
+        if (self.m_write_area.GetValue() == ""):
+            dia = wx.MessageDialog(None, "Command list is empty!", "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
 
-            print single_command_list
-            print action_index
-            print parameter_converter.command(single_command_list)
-            
-            #self.m_action_list.InsertStringItem(action_index, str(action_index + 1))
-            self.m_action_list.InsertStringItem(action_index, "hello")
-            self.m_action_list.SetStringItem(action_index, 1, str(single_command_list[0]))
-            self.m_action_list.SetStringItem(action_index, 2, str(single_command_list[1:]))
-            self.m_action_list.SetStringItem(action_index, 3, str(parameter_converter.command(single_command_list)))
+            return
+
+        else:
+            pass
+
+        command_string_list = self.m_write_area.GetValue().splitlines()
+
+        line_number = 1
+        for command_string in command_string_list:
+            command = command_string.split()
+            try:
+                code = self.parameter_converter.convert(command)
+
+            except Exception as e:
+                dia = wx.MessageDialog(None, "Command Error in line: " + str(line_number) + "\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+                dia.ShowModal()
+                dia.Destroy()
+
+                return
+
+            else:
+                pass
+
+            line_number = line_number + 1
+
+        action_index = 0
+        for command_string in command_string_list:
+            command = command_string.split()
+
+            self.m_action_list.InsertStringItem(action_index, str(action_index + 1))
+            self.m_action_list.SetStringItem(action_index, 1, str(" ".join(command)))
+            self.m_action_list.SetStringItem(action_index, 2, str(" ".join(self.parameter_converter.convert(command))))
             self.m_action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
             self.m_action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-            self.m_action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
-            self.m_action_list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
+            #self.m_action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
 
             action_index =  action_index + 1
 
 
     def on_action_send_button_clicked(self, event):
-        try:
-            self.ser.write(''.join(real_commands).decode("hex"))
-        except Exception, e:
-            print '[smcsc_frame\t] Write Fail!', e
+        if (self.m_action_list.GetFirstSelected() == -1):
+            dia = wx.MessageDialog(None, "No item is selected!", "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
 
         else:
-            print '[smcsc_frame\t] Write succeed!'
+            pass
+
+        action_index = self.m_action_list.GetFirstSelected()
+        command = self.m_action_list.GetItemText(action_index, 1).split()
+
+        try:
+            code = self.parameter_converter.convert(command)
+
+        except Exception as e:
+            dia = wx.MessageDialog(None, "Convert failed!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+
+        else:
+            pass
+
+        try:
+            self.ser.write(''.join(code).decode("hex"))
+
+        except Exception, e:
+            dia = wx.MessageDialog(None, "Write Failed!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+            #print '[smcsc_frame\t] Write Fail!', e
+
+        else:
+            pass
+            #print '[smcsc_frame\t] Write succeed!'
+
+    def on_send_button_clicked(self, event):
+        command = self.m_send_input.GetValue().split()
+        try:
+            code = self.parameter_converter.convert(command)
+
+        except Exception as e:
+            dia = wx.MessageDialog(None, "Convert failed!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+
+        else:
+            pass
+
+        try:
+            self.ser.write(''.join(code).decode("hex"))
+
+        except Exception as e:
+            dia = wx.MessageDialog(None, "Write Failed!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+            #print '[smcsc_frame\t] Write Fail!', e
+
+        else:
+            pass
+            #print '[smcsc_frame\t] Write succeed!'
