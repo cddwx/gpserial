@@ -104,24 +104,24 @@ class smcsc_frame(wx.Frame):
         recieve_area_box.Add(self.m_recieve_clear_button, 0)
 
         setting_area_parameter_port_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_parameter_port_box.Add(self.m_serial_com_title, 1)
-        setting_area_parameter_port_box.Add(self.m_serial_com_select, 1)
+        setting_area_parameter_port_box.Add(self.m_serial_com_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        setting_area_parameter_port_box.Add(self.m_serial_com_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
         setting_area_parameter_bitrate_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_parameter_bitrate_box.Add(self.m_serial_bitrate_title, 1)
-        setting_area_parameter_bitrate_box.Add(self.m_serial_bitrate_select, 1)
+        setting_area_parameter_bitrate_box.Add(self.m_serial_bitrate_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        setting_area_parameter_bitrate_box.Add(self.m_serial_bitrate_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
         setting_area_parameter_databit_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_parameter_databit_box.Add(self.m_serial_databit_title, 1)
-        setting_area_parameter_databit_box.Add(self.m_serial_databit_select, 1)
+        setting_area_parameter_databit_box.Add(self.m_serial_databit_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        setting_area_parameter_databit_box.Add(self.m_serial_databit_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
         setting_area_parameter_checkbit_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_parameter_checkbit_box.Add(self.m_serial_checkbit_title, 1)
-        setting_area_parameter_checkbit_box.Add(self.m_serial_checkbit_select, 1)
+        setting_area_parameter_checkbit_box.Add(self.m_serial_checkbit_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        setting_area_parameter_checkbit_box.Add(self.m_serial_checkbit_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
         setting_area_parameter_stopbit_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_parameter_stopbit_box.Add(self.m_serial_stopbit_title, 1)
-        setting_area_parameter_stopbit_box.Add(self.m_serial_stopbit_select, 1)
+        setting_area_parameter_stopbit_box.Add(self.m_serial_stopbit_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        setting_area_parameter_stopbit_box.Add(self.m_serial_stopbit_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
         setting_area_parameter_box = wx.BoxSizer(wx.VERTICAL)
         setting_area_parameter_box.Add(setting_area_parameter_port_box, 1, wx.EXPAND)
@@ -132,13 +132,13 @@ class smcsc_frame(wx.Frame):
 
 
         setting_area_operate_open_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_operate_open_box.Add(self.m_serial_open_button, 0)
+        setting_area_operate_open_box.Add(self.m_serial_open_button, 0, wx.ALIGN_CENTER_VERTICAL)
 
         setting_area_operate_close_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_operate_close_box.Add(self.m_serial_close_button, 0)
+        setting_area_operate_close_box.Add(self.m_serial_close_button, 0, wx.ALIGN_CENTER_VERTICAL)
 
         setting_area_operate_exit_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_operate_exit_box.Add(self.m_program_exit_button, 0)
+        setting_area_operate_exit_box.Add(self.m_program_exit_button, 0, wx.ALIGN_CENTER_VERTICAL)
         
         setting_area_operate_box = wx.BoxSizer(wx.VERTICAL)
         setting_area_operate_box.Add(setting_area_operate_open_box, 1, wx.ALIGN_CENTER)
@@ -203,14 +203,16 @@ class smcsc_frame(wx.Frame):
 
         self.m_write_convert_button.Bind(wx.EVT_BUTTON, self.on_write_convert_button_clicked)
 
-
+    #
+    # Event handle functions
+    #
 
     # Recieve area update
     def on_recieve_area_update(self, data):
         self.m_recieve_area.AppendText(data)
 
 
-        # Recieve area.
+    # Recieve area.
     def on_recieve_clear_button_clicked(self, event):
         self.m_recieve_area.Clear()
 
@@ -227,8 +229,13 @@ class smcsc_frame(wx.Frame):
                 self.ser.bytesize = int(self.m_serial_databit_select.GetValue())
                 self.ser.stopbits = int(self.m_serial_stopbit_select.GetValue())
                 self.ser.open()
+
             except Exception as e:
-                print '[serial_frame\t] COMM Open Fail!', e
+                dia = wx.MessageDialog(None, "COMM Open Fail!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+                dia.ShowModal()
+                dia.Destroy()
+
+                return
 
             else:
                 self.m_serial_open_button.Enable(False)
@@ -245,7 +252,11 @@ class smcsc_frame(wx.Frame):
                     pass
 
             except Exception as e:
-                print '[serial_frame\t] COMM close Fail!', e
+                dia = wx.MessageDialog(None, "COMM close Fail!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+                dia.ShowModal()
+                dia.Destroy()
+
+                return
 
             else:
                 self.m_serial_open_button.Enable(True)
