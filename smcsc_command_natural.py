@@ -4,9 +4,15 @@
 '''
 These command take step length dependent, decimal, pratical meaning parameters that are not
 directly coresponding to the original code unit.
+
+Command format:
+
+VD {step} {direction} {speed} {distance}
+DELAY {interval}
+ALT {step} {direction} {speed} {distance} {interval} {count}
 '''
 
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, ROUND_UP, ROUND_DOWN
 
 class smcsc_command_natural:
     BACK_DIRECTION = "0"
@@ -18,17 +24,58 @@ class smcsc_command_natural:
     END = ["00", "00", "00",]
 
     def convert(self, command):
+        if command == []:
+            print "[Error   ] Command is empty."
+            print '''Availiable commands:
+VD {step} {direction} {speed} {distance}
+DELAY {interval}
+ALT {step} {direction} {speed} {distance} {interval} {count}'''
+            return False
+
         if command[0] == "VD":
             '''
-            direction       int     1       1, 0
-            speed           float   um/s    f(step / 3.0)--f(step / 0.2) OR f(step / 65536)--f(step / 4)
-            distance        int     um      0--f(step * 65535) OR 0--f(step * 255)
             step            float   um
+            direction       int     1       1, 0
+            speed           float   um/s    f(step / 65536 * 1000)--f(step / 4 * 1000) OR f(step / 3.0 * 1000)--f(step / 0.2 * 1000)
+            distance        int     um      0--f(step * 255) OR 0--f(step * 65535)
             '''
-            direction = int(command[1])
-            speed = Decimal(command[2])
-            distance = int(command[3])
-            step = Decimal(command[4])
+            if len(command[1:]) != 4:
+                print "[Error   ] The number of parameter is wrong."
+                print '''Parameters:
+step            float   um
+direction       int     1       1, 0
+speed           float   um/s    f(step / 65536 * 1000)--f(step / 4 * 1000) OR f(step / 3.0 * 1000)--f(step / 0.2 * 1000)
+distance        int     um      0--f(step * 255) OR 0--f(step * 65535)'''
+                return False
+
+            if ((not self.is_int(command[1])) and (not self.is_float(command[1]))):
+                print "[Error   ] The step is wrong."
+                return False
+
+            if command[2] not in ["1", "0"]:
+                print "[Error   ] The direction is wrong."
+                return False
+
+            slow_begin = (Decimal(command[1]) / 65536 * 1000).quantize(Decimal("0.001"), rounding=ROUND_UP)
+            slow_end = (Decimal(command[1]) / 4 * 1000).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
+            fast_begin = (Decimal(command[1]) / 3 * 1000).quantize(Decimal("0.001"), rounding=ROUND_UP)
+            fast_end = (Decimal(command[1]) / Decimal("0.2") * 1000).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
+            if ((not self.is_int(command[3])) and (not self.is_float(command[3]))) or ((Decimal(command[3]) < slow_begin) or ((Decimal(command[3]) > slow_end) and (Decimal(command[3]) < fast_begin)) or (Decimal(command[3]) > fast_end)):
+                print "[Error   ] The speed is wrong."
+                print "The range for current step is %s -- %s and %s -- %s." % (slow_begin, slow_end, fast_begin, fast_end)
+                return False
+
+            little_end = (Decimal(command[1]) * 255).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
+            more_end = (Decimal(command[1]) * 65535).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
+            if (not self.is_int(command[4])) or (((Decimal(command[3]) <= slow_end) and ((int(command[4]) < 0) or (int(command[4]) > little_end))) or ((Decimal(command[3]) >= fast_begin) and ((int(command[4]) < 0) or (int(command[4]) > more_end)))):
+                print "[Error   ] The distance is wrong."
+                print "The range for current step is %s -- %s when speed at %s -- %s and %s -- %s when speed at %s -- %s." % (0, little_end, slow_begin, slow_end, 0, more_end, fast_begin, fast_end)
+                return False
+
+            step = Decimal(command[1])
+            direction = int(command[2])
+            speed = Decimal(command[3])
+            distance = int(command[4])
 
             if direction == 1:
                 a11 = "F"
@@ -64,6 +111,7 @@ class smcsc_command_natural:
                     a9 = self.BACK_PAUSE_TIME_LOW
 
                     code = [a1, a2, a3, a4, a5, a6, a7, a8, a9,] + self.END
+                    return code
 
                 elif count % 255 == 0:
                     a2 = "FF"
@@ -75,6 +123,7 @@ class smcsc_command_natural:
                     a9 = self.BACK_PAUSE_TIME_LOW
 
                     code = [a1, a2, a3, a4, a5, a6, a7, a8, a9,] + self.END
+                    return code
 
                 elif count % 255 != 0:
                     a2 = "FF"
@@ -97,6 +146,7 @@ class smcsc_command_natural:
                     a9_2 = a9
 
                     code = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a1_2, a2_2, a3_2, a4_2, a5_2, a6_2, a7_2, a8_2, a9_2,] + self.END
+                    return code
 
                 else:
                     pass
@@ -117,6 +167,7 @@ class smcsc_command_natural:
                 a9 = self.BACK_PAUSE_TIME_LOW
 
                 code = [a1, a2, a3, a4, a5, a6, a7, a8, a9,] + self.END
+                return code
 
             else:
                 pass
@@ -125,6 +176,17 @@ class smcsc_command_natural:
             '''
             interval    int     ms  0--65535 * 255
             '''
+
+            if len(command[1:]) != 1:
+                print "[Error   ] The number of parameter is wrong."
+                print '''Parameters:
+interval    int     ms  0--65535 * 255'''
+                return False
+
+            if (not self.is_int(command[1])) or ((int(command[1]) < 0) or (int(command[1]) > (65535 * 255))):
+                print "[Error   ] The interval is wrong."
+                return False
+
             interval = int(command[1])
 
             a1 = "05"
@@ -141,6 +203,7 @@ class smcsc_command_natural:
                 a9 = self.BACK_PAUSE_TIME_LOW
 
                 code = [a1, a2, a3, a4, a5, a6, a7, a8, a9,] + self.END
+                return code
 
             elif interval % 65535 == 0:
                 a3 = "FF"
@@ -153,6 +216,7 @@ class smcsc_command_natural:
                 a9 = self.BACK_PAUSE_TIME_LOW
 
                 code = [a1, a2, a3, a4, a5, a6, a7, a8, a9,] + self.END
+                return code
 
             elif interval % 65535 != 0:
                 a3 = "FF"
@@ -176,25 +240,67 @@ class smcsc_command_natural:
                 a9_2 = a9
 
                 code = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a1_2, a2_2, a3_2, a4_2, a5_2, a6_2, a7_2, a8_2, a9_2,] + self.END
+                return code
 
             else:
                 pass
 
         elif command[0] == "ALT":
             '''
+            step            float   um
             direction       int     1       1, 0
-            speed           float   um/s
-            distance        int     um
+            speed           float   um/s    f(step / 3.0 * 1000)--f(step / 0.2 * 1000)
+            distance        int     um      0--f(step * 255)
             interval        int     ms      0--65535
             count           int     1       0--255
-            step            float   um
             '''
-            direction = int(command[1])
-            speed = Decimal(command[2])
-            distance = int(command[3])
-            interval = int(command[4])
-            count = int(command[5])
-            step = Decimal(command[6])
+
+            if len(command[1:]) != 6:
+                print "[Error   ] The number of parameter is wrong."
+                print '''Parameters:
+step            float   um
+direction       int     1       1, 0
+speed           float   um/s    f(step / 3.0 * 1000)--f(step / 0.2 * 1000)
+distance        int     um      0--f(step * 255)
+interval        int     ms      0--65535
+count           int     1       0--255'''
+                return False
+
+            if ((not self.is_int(command[1])) and (not self.is_float(command[1]))):
+                print "[Error   ] The step is wrong."
+                return False
+
+            if command[2] not in ["1", "0"]:
+                print "[Error   ] The direction is wrong."
+                return False
+
+            fast_begin = (Decimal(command[1]) / 3 * 1000).quantize(Decimal("0.001"), rounding=ROUND_UP)
+            fast_end = (Decimal(command[1]) / Decimal("0.2") * 1000).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
+            if ((not self.is_int(command[3])) and (not self.is_float(command[3]))) or ((Decimal(command[3]) < fast_begin) or (Decimal(command[3]) > fast_end)):
+                print "[Error   ] The speed is wrong."
+                print "The range for current step is %s -- %s." % (fast_begin, fast_end)
+                return False
+
+            little_end = (Decimal(command[1]) * 255).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
+            if (not self.is_int(command[4])) or ((int(command[4]) < 0) or (int(command[4]) > little_end)):
+                print "[Error   ] The distance is wrong."
+                print "The range for current step is %s -- %s." % (0, little_end)
+                return False
+
+            if (not self.is_int(command[5])) or (int(command[5]) < 0 or int(command[5]) > 65535):
+                print "[Error   ] The interval is wrong."
+                return False
+
+            if (not self.is_int(command[6])) or (int(command[6]) < 0 or int(command[6]) > 255):
+                print "[Error   ] The count is wrong."
+                return False
+
+            step = Decimal(command[1])
+            direction = int(command[2])
+            speed = Decimal(command[3])
+            distance = int(command[4])
+            interval = int(command[5])
+            count = int(command[6])
 
             if direction == 1:
                 a11 = "F"
@@ -227,9 +333,27 @@ class smcsc_command_natural:
             a9 = self.BACK_PAUSE_TIME_LOW
 
             code = [a1, a2, a3, a4, a5, a6, a7, a8, a9,] + self.END
+            return code
 
         else:
-            pass
+            print "[Error   ] Unknown command."
+            return False
 
-        #return ''.join(code)
-        return code
+    def is_int(self, string):
+        try:
+            int(string)
+            return True
+
+        except ValueError:
+            return False
+
+    def is_float(self, string):
+        try:
+            float(string)
+            if not self.is_int(string):
+                return True
+            else:
+                return False
+
+        except ValueError:
+            return False

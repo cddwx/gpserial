@@ -8,4 +8,5 @@ parameter_converter = smcsc_command_short()
 
 
 #print sys.argv[1:]
-print parameter_converter.convert(sys.argv[1:])
+if parameter_converter.convert(sys.argv[1:]) != False:
+    print parameter_converter.convert(sys.argv[1:])
