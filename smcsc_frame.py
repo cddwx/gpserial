@@ -4,7 +4,7 @@
 import wx
 from wx.lib import buttons
 
-from smcsc_command_natural import smcsc_command_natural
+from smcsc_command_direct import smcsc_command_direct
 
 class smcsc_frame(wx.Frame):
     def __init__(self, serial_obj, frame_title, com_choices):
@@ -19,7 +19,7 @@ class smcsc_frame(wx.Frame):
 
         self.ser = serial_obj
         self.com_choices = com_choices
-        self.parameter_converter = smcsc_command_natural()
+        self.parameter_converter = smcsc_command_direct()
 
         panel = wx.Panel(self)
 
