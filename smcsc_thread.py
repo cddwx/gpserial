@@ -3,14 +3,17 @@
 
 import time
 import threading
+import wx
 from wx.lib.pubsub import pub
 
 class smcsc_thread(threading.Thread):
     def __init__(self, ser):
         threading.Thread.__init__(self)
+
         self.ser = ser
 
         self.event_stop = threading.Event()
+
         self.start()
 
     def run(self):

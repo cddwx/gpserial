@@ -31,7 +31,7 @@ class smcsc_frame(wx.Frame):
         # Send objects.
         self.m_action_title = wx.StaticText(panel, label=u"List command send")
 
-        self.m_action_list = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_SINGLE_SEL)
+        self.m_action_list = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES | wx.LC_SINGLE_SEL)
         self.m_action_list.InsertColumn(0, u"Number", format=wx.LIST_FORMAT_LEFT)
         self.m_action_list.InsertColumn(1, u"Command", format=wx.LIST_FORMAT_LEFT)
         self.m_action_list.InsertColumn(2, u"Hex code", format=wx.LIST_FORMAT_LEFT)
@@ -146,7 +146,7 @@ class smcsc_frame(wx.Frame):
         setting_area_operate_box.Add(setting_area_operate_exit_box, 1, wx.ALIGN_CENTER)
 
         setting_area_content_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_content_box.Add(setting_area_parameter_box, 1, wx.EXPAND)
+        setting_area_content_box.Add(setting_area_parameter_box, 2, wx.EXPAND)
         setting_area_content_box.Add(setting_area_operate_box, 1, wx.EXPAND)
 
         setting_area_box = wx.BoxSizer(wx.VERTICAL)
@@ -167,16 +167,16 @@ class smcsc_frame(wx.Frame):
         write_area_box.Add(self.m_write_convert_button, 0)
         
         up_box = wx.BoxSizer(wx.HORIZONTAL)
-        up_box.Add(recieve_area_box, 1, wx.EXPAND | wx.ALL, 5)
         up_box.Add(setting_area_box, 1, wx.EXPAND | wx.ALL, 5)
+        up_box.Add(recieve_area_box, 2, wx.EXPAND | wx.ALL, 5)
 
         down_box = wx.BoxSizer(wx.HORIZONTAL)
-        down_box.Add(send_area_box, 1, wx.EXPAND | wx.ALL, 5)
         down_box.Add(write_area_box, 1, wx.EXPAND | wx.ALL, 5)
+        down_box.Add(send_area_box, 2, wx.EXPAND | wx.ALL, 5)
 
         main_box = wx.BoxSizer(wx.VERTICAL)
         main_box.Add(up_box, 1, wx.EXPAND | wx.ALL, 5)
-        main_box.Add(down_box, 2, wx.EXPAND | wx.ALL, 5)
+        main_box.Add(down_box, 3, wx.EXPAND | wx.ALL, 5)
 
         panel.SetSizer(main_box)
         panel.Layout()
@@ -314,12 +314,22 @@ class smcsc_frame(wx.Frame):
             self.m_action_list.SetStringItem(action_index, 2, str(" ".join(self.parameter_converter.convert(command))))
             self.m_action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
             self.m_action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-            #self.m_action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+            self.m_action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
 
             action_index =  action_index + 1
 
 
     def on_action_send_button_clicked(self, event):
+        if (self.m_action_list.GetItemCount() == 0):
+            dia = wx.MessageDialog(None, "The item list is empty!", "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+
+        else:
+            pass
+
         if (self.m_action_list.GetFirstSelected() == -1):
             dia = wx.MessageDialog(None, "No item is selected!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
