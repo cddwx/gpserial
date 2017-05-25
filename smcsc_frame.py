@@ -4,13 +4,12 @@
 import wx
 from wx.lib import buttons
 
-from serial import Serial
 import serial.tools.list_ports
 
 from smcsc_command_natural import smcsc_command_natural
 
 class smcsc_frame(wx.Frame):
-    def __init__(self):
+    def __init__(self, ser):
         wx.Frame.__init__(
                 self,
                 parent=None,
@@ -20,7 +19,7 @@ class smcsc_frame(wx.Frame):
                 size=wx.DefaultSize,
         )
 
-        self.ser = Serial()
+        self.ser = ser
 
         self.parameter_converter = smcsc_command_natural()
 
@@ -284,7 +283,7 @@ class smcsc_frame(wx.Frame):
         # main_box
         main_box = wx.BoxSizer(wx.VERTICAL)
         main_box.Add(up_box, 1, wx.EXPAND | wx.ALL, 5)
-        main_box.Add(down_box, 3, wx.EXPAND | wx.ALL, 5)
+        main_box.Add(down_box, 2, wx.EXPAND | wx.ALL, 5)
 
         panel.SetSizer(main_box)
         panel.Layout()
@@ -351,16 +350,12 @@ class smcsc_frame(wx.Frame):
 
         return True
 
-
-    #
-    # Event handle functions
-    #
     def set_constant(self):
-        direction = self.m_direction_input.GetValue()
-        interval = self.m_interval_input.GetValue()
-        step_count = self.m_step_count_input.GetValue()
-        pause_time_high = self.m_pause_time_high_input.GetValue()
-        pause_time_low = self.m_pause_time_low_input.GetValue()
+        direction = str(self.m_direction_input.GetValue())
+        interval = str(self.m_interval_input.GetValue())
+        step_count = str(self.m_step_count_input.GetValue())
+        pause_time_high = str(self.m_pause_time_high_input.GetValue())
+        pause_time_low = str(self.m_pause_time_low_input.GetValue())
 
         try:
             if self.is_one_bit_hex("Direction", direction):
@@ -386,8 +381,13 @@ class smcsc_frame(wx.Frame):
             return
 
 
+    #
+    # Event handle functions
+    #
+
     # Recieve area update
     def on_recieve_area_update(self, data):
+        #print "[data", data, "]"
         self.m_recieve_area.AppendText(data)
 
 
@@ -400,6 +400,7 @@ class smcsc_frame(wx.Frame):
     def on_serial_check_button_clicked(self, event):
         self.m_serial_com_select.Set(self.get_m_com_choices())
         self.m_serial_com_select.SetSelection(0)
+
 
     def on_serial_open_button_clicked(self, event):
         if not self.ser.isOpen():
@@ -462,15 +463,12 @@ class smcsc_frame(wx.Frame):
 
             return
 
-        else:
-            pass
-
-        command_string_list = self.m_write_area.GetValue().splitlines()
+        command_string_list = str(self.m_write_area.GetValue()).splitlines()
 
         line_number = 1
         for command_string in command_string_list:
-            command = command_string.split()
             try:
+                command = command_string.split()
                 code = self.parameter_converter.convert(command)
 
             except Exception as e:
@@ -480,11 +478,7 @@ class smcsc_frame(wx.Frame):
 
                 return
 
-            else:
-                pass
-
             line_number = line_number + 1
-
 
         self.m_action_list.DeleteAllItems()
         self.set_constant()
@@ -492,6 +486,8 @@ class smcsc_frame(wx.Frame):
         action_index = 0
         for command_string in command_string_list:
             command = command_string.split()
+
+            #print "[command: ", command, "]"
 
             self.m_action_list.InsertStringItem(action_index, str(action_index + 1))
             self.m_action_list.SetStringItem(action_index, 1, str(" ".join(command)))
@@ -511,9 +507,6 @@ class smcsc_frame(wx.Frame):
 
             return
 
-        else:
-            pass
-
         if (self.m_action_list.GetFirstSelected() == -1):
             dia = wx.MessageDialog(None, "No item is selected!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
@@ -521,40 +514,37 @@ class smcsc_frame(wx.Frame):
 
             return
 
-        else:
-            pass
-
-        action_index = self.m_action_list.GetFirstSelected()
-        code = self.m_action_list.GetItemText(action_index, 2).split()
-
         try:
+            action_index = self.m_action_list.GetFirstSelected()
+            code = str(self.m_action_list.GetItemText(action_index, 2)).split()
+
+            #print "[code: ", code, "]"
+
             self.ser.write("".join(code).decode("hex"))
 
-        except Exception, e:
+        except Exception as e:
             dia = wx.MessageDialog(None, "Write Failed!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
             return
 
-        else:
-            pass
 
     def on_send_button_clicked(self, event):
-        self.set_constant()
-        command = self.m_send_input.GetValue().split()
         try:
+            self.set_constant()
+            command = str(self.m_send_input.GetValue()).split()
             code = self.parameter_converter.convert(command)
 
+            #print "[command: ", command, "]"
+            #print "[code: ", code, "]"
+
         except Exception as e:
-            dia = wx.MessageDialog(None, "Convert failed!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(None, "Send failed!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
             return
-
-        else:
-            pass
 
         try:
             self.ser.write("".join(code).decode("hex"))
@@ -565,6 +555,3 @@ class smcsc_frame(wx.Frame):
             dia.Destroy()
 
             return
-
-        else:
-            pass

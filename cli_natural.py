@@ -9,6 +9,7 @@ parameter_converter = smcsc_command_natural()
 #print sys.argv[1:]
 try:
     print parameter_converter.convert(sys.argv[1:])
+    print sys.argv[1:]
 
 except Exception, e:
     print "[Error   ]" , e

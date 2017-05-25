@@ -16,10 +16,8 @@ class smcsc_app(wx.App):
 
         self.thread = smcsc_thread(self.ser)
 
-        self.frame = smcsc_frame()
-
-        pub.subscribe(self.frame.on_recieve_area_update, 'update')
-
+        self.frame = smcsc_frame(self.ser)
+        pub.subscribe(self.frame.on_recieve_area_update, "update")
         self.frame.Show()
 
         return True
