@@ -39,21 +39,25 @@ class smcsc_command_natural:
             speed           float   um/s    f(step / 65536 * 1000)--f(step / 4 * 1000) OR f(step / 3.0 * 1000)--f(step / 0.2 * 1000)
             distance        int     um      0--f(step * 255) OR 0--f(step * 65535)
             '''
+
             if len(command[1:]) != 4:
-                error = '''In "VD", the number of parameter is wrong
+                error_tmp = '''In "%s", the number of parameter is wrong
     Parameters:
     step            float   um
     direction       int     1       1, 0
     speed           float   um/s    f(step / 65536 * 1000)--f(step / 4 * 1000) OR f(step / 3.0 * 1000)--f(step / 0.2 * 1000)
     distance        int     um      0--f(step * 255) OR 0--f(step * 65535)'''
+                error = error_tmp % (" ".join(command))
                 raise Exception(error)
 
             if ((not self.is_int(command[1])) and (not self.is_float(command[1]))):
-                error = '''In "VD", the step is wrong.'''
+                error_tmp = '''In "%s", the step "%s" is wrong.'''
+                error = error_tmp % (" ".join(command), command[1])
                 raise Exception(error)
 
             if command[2] not in ["1", "0"]:
-                error = '''In "VD", the direction is wrong.'''
+                error_tmp = '''In "%s", the direction "%s" is wrong.'''
+                error = error_tmp % (" ".join(command), command[2])
                 raise Exception(error)
 
             slow_begin = (Decimal(command[1]) / 65536 * 1000).quantize(Decimal("0.001"), rounding=ROUND_UP)
@@ -61,17 +65,17 @@ class smcsc_command_natural:
             fast_begin = (Decimal(command[1]) / 3 * 1000).quantize(Decimal("0.001"), rounding=ROUND_UP)
             fast_end = (Decimal(command[1]) / Decimal("0.2") * 1000).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             if ((not self.is_int(command[3])) and (not self.is_float(command[3]))) or ((Decimal(command[3]) < slow_begin) or ((Decimal(command[3]) > slow_end) and (Decimal(command[3]) < fast_begin)) or (Decimal(command[3]) > fast_end)):
-                error_tmp = '''In "VD", the speed is wrong
-    The range for current step is %s -- %s and %s -- %s.'''
-                error = error_tmp  % (slow_begin, slow_end, fast_begin, fast_end)
+                error_tmp = '''In "%s", the speed "%s" is wrong
+    The range for current step "%s" is %s -- %s and %s -- %s.'''
+                error = error_tmp  % (" ".join(command), command[3], command[1], slow_begin, slow_end, fast_begin, fast_end)
                 raise Exception(error)
 
             little_end = (Decimal(command[1]) * 255).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             more_end = (Decimal(command[1]) * 65535).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             if (not self.is_int(command[4])) or (((Decimal(command[3]) <= slow_end) and ((int(command[4]) < 0) or (int(command[4]) > little_end))) or ((Decimal(command[3]) >= fast_begin) and ((int(command[4]) < 0) or (int(command[4]) > more_end)))):
-                error_tmp = '''In "VD", the distance is wrong
-    The range for current step is %s -- %s when speed at %s -- %s and %s -- %s when speed at %s -- %s.'''
-                error = error_tmp  % (0, little_end, slow_begin, slow_end, 0, more_end, fast_begin, fast_end)
+                error_tmp = '''In "%s", the distance "%s" is wrong
+    The range for current step "%s" is %s -- %s when speed at %s -- %s and %s -- %s when speed at %s -- %s.'''
+                error = error_tmp  % (" ".join(command), command[4], command[1], 0, little_end, slow_begin, slow_end, 0, more_end, fast_begin, fast_end)
                 raise Exception(error)
 
             step = Decimal(command[1])
@@ -180,13 +184,15 @@ class smcsc_command_natural:
             '''
 
             if len(command[1:]) != 1:
-                error = '''In "DELAY", the number of parameter is wrong
+                error_tmp = '''In "%s", the number of parameter is wrong
     Parameters:
     interval    int     ms  0--65535 * 255'''
+                error = error_tmp % (" ".join(command))
                 raise Exception(error)
 
             if (not self.is_int(command[1])) or ((int(command[1]) < 0) or (int(command[1]) > (65535 * 255))):
-                error = '''In "DELAY", the interval is wrong.'''
+                error_tmp = '''In "%s", the interval "%s" is wrong.'''
+                error = error_tmp % (" ".join(command), command[1])
                 raise Exception(error)
 
             interval = int(command[1])
@@ -258,7 +264,7 @@ class smcsc_command_natural:
             '''
 
             if len(command[1:]) != 6:
-                error = '''In "ALT", the number of parameter is wrong
+                error_tmp = '''In "%s", the number of parameter is wrong
     Parameters:
     step            float   um
     direction       int     1       1, 0
@@ -266,37 +272,42 @@ class smcsc_command_natural:
     distance        int     um      0--f(step * 255)
     interval        int     ms      0--65535
     count           int     1       0--255'''
+                error = error_tmp % (" ".join(command))
                 raise Exception(error)
 
             if ((not self.is_int(command[1])) and (not self.is_float(command[1]))):
-                error = '''In "ALT", the step is wrong.'''
+                error_tmp = '''In "%s", the step "%s" is wrong.'''
+                error = error_tmp % (" ".join(command), command[1])
                 raise Exception(error)
 
             if command[2] not in ["1", "0"]:
-                error = '''In "ALT", the direction is wrong.'''
+                error_tmp = '''In "%s", the direction "%s" is wrong.'''
+                error = error_tmp % (" ".join(command), command[2])
                 raise Exception(error)
 
             fast_begin = (Decimal(command[1]) / 3 * 1000).quantize(Decimal("0.001"), rounding=ROUND_UP)
             fast_end = (Decimal(command[1]) / Decimal("0.2") * 1000).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             if ((not self.is_int(command[3])) and (not self.is_float(command[3]))) or ((Decimal(command[3]) < fast_begin) or (Decimal(command[3]) > fast_end)):
-                error_tmp = '''In "ALT", the speed is wrong
-    The range for current step is %s -- %s.'''
-                error = error_tmp % (fast_begin, fast_end)
+                error_tmp = '''In "%s", the speed "%s" is wrong
+    The range for current step "%s" is %s -- %s.'''
+                error = error_tmp % (" ".join(command), command[3], command[1], fast_begin, fast_end)
                 raise Exception(error)
 
             little_end = (Decimal(command[1]) * 255).quantize(Decimal("0.001"), rounding=ROUND_DOWN)
             if (not self.is_int(command[4])) or ((int(command[4]) < 0) or (int(command[4]) > little_end)):
-                error_tmp = '''In "ALT", the distance is wrong
-    The range for current step is %s -- %s.'''
-                error = error_tmp % (0, little_end)
+                error_tmp = '''In "%s", the distance "%s" is wrong
+    The range for current step "%s" is %s -- %s.'''
+                error = error_tmp % (" ".join(command), command[4], command[1], 0, little_end)
                 raise Exception(error)
 
             if (not self.is_int(command[5])) or (int(command[5]) < 0 or int(command[5]) > 65535):
-                error = '''In "ALT", the interval is wrong.'''
+                error_tmp = '''In "%s", the interval "%s" is wrong.'''
+                error = error_tmp % (" ".join(command), command[5])
                 raise Exception(error)
 
             if (not self.is_int(command[6])) or (int(command[6]) < 0 or int(command[6]) > 255):
-                error = '''In "ALT", the count is wrong.'''
+                error_tmp = '''In "%s", the count "%s" is wrong.'''
+                error = error_tmp % (" ".join(command), command[6])
                 raise Exception(error)
 
             step = Decimal(command[1])
