@@ -328,25 +328,25 @@ class app_frame(wx.Frame):
 
     def is_one_bit_hex(self, name, string):
         if (len(string) != 1):
-            raise ValueError("Constant set error!\n" + name + " length is wrong! Need to be 1 bit.")
+            raise ValueError("Back code set error!\n" + name + " length is wrong! Need to be 1 bit.")
 
         if (not self.is_hex(string)):
-            raise ValueError("Constant set error!\n" + name + " is not hex string!")
+            raise ValueError("Back code set error!\n" + name + " is not hex string!")
 
         if ((int(string, 16) < 0) or (int(string, 16) > 15)):
-            raise ValueError("Constant set error!\n" + name + " is exced the range 0--F!")
+            raise ValueError("Back code set error!\n" + name + " is exced the range 0--F!")
 
         return True
 
     def is_two_bit_hex(self, name, string):
         if (len(string) != 2):
-            raise ValueError("Constant set error!\n" + name + " length is wrong! Need to be 2 bit.")
+            raise ValueError("Back code set error!\n" + name + " length is wrong! Need to be 2 bit.")
 
         if (not self.is_hex(string)):
-            raise ValueError("Constant set error!\n" + name + " is not hex string!")
+            raise ValueError("Back code set error!\n" + name + " is not hex string!")
 
         if ((int(string, 16) < 0) or (int(string, 16) > 255)):
-            raise ValueError("Constant set error!\n" + name + " is exced the range 00--FF!")
+            raise ValueError("Back code set error!\n" + name + " is exced the range 00--FF!")
 
         return True
 
@@ -448,18 +448,18 @@ class app_frame(wx.Frame):
 
 
     def on_write_convert_button_clicked(self, event):
-        if (self.m_write_area.GetValue() == ""):
-            dia = wx.MessageDialog(None, "Command list is empty!", "Error", wx.OK | wx.ICON_ERROR)
-            dia.ShowModal()
-            dia.Destroy()
-
-            return
-
         try:
             self.set_constant()
 
         except ValueError as e:
             dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+
+        if (self.m_write_area.GetValue() == ""):
+            dia = wx.MessageDialog(None, "Command list is empty!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
