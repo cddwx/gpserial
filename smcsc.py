@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from smcsc_app import smcsc_app
+from core.app_main import app_main
 
 def main():
-    app = smcsc_app()
+    app = app_main()
     app.MainLoop()
 
 if __name__ == '__main__':

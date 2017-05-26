@@ -2,13 +2,14 @@
 # coding=utf-8
 
 import sys
-from smcsc_command_natural import smcsc_command_natural
 
-parameter_converter = smcsc_command_natural()
+from core.command_converter import command_converter
+
+converter = command_converter()
 
 #print sys.argv[1:]
 try:
-    print parameter_converter.convert(sys.argv[1:])
+    print converter.convert(sys.argv[1:])
     print sys.argv[1:]
 
 except Exception, e:

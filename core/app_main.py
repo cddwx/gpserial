@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from wx.lib.pubsub import pub
 import wx
 
+from wx.lib.pubsub import pub
 from serial import Serial
 
-from smcsc_thread import smcsc_thread
-from smcsc_frame import smcsc_frame
+from serial_thread import serial_thread
+from app_frame import app_frame
 
 
-class smcsc_app(wx.App):
+class app_main(wx.App):
     def OnInit(self):
         self.ser = Serial()
 
-        self.thread = smcsc_thread(self.ser)
+        self.thread = serial_thread(self.ser)
 
-        self.frame = smcsc_frame(self.ser)
+        self.frame = app_frame(self.ser)
         pub.subscribe(self.frame.on_recieve_area_update, "update")
         self.frame.Show()
 

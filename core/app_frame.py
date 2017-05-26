@@ -2,13 +2,13 @@
 # coding=utf-8
 
 import wx
+
 from wx.lib import buttons
+from serial.tools.list_ports import comports
 
-import serial.tools.list_ports
+from command_converter import command_converter
 
-from smcsc_command_natural import smcsc_command_natural
-
-class smcsc_frame(wx.Frame):
+class app_frame(wx.Frame):
     def __init__(self, ser):
         wx.Frame.__init__(
                 self,
@@ -21,7 +21,7 @@ class smcsc_frame(wx.Frame):
 
         self.ser = ser
 
-        self.parameter_converter = smcsc_command_natural()
+        self.converter = command_converter()
 
         panel = wx.Panel(self)
 
@@ -102,19 +102,19 @@ class smcsc_frame(wx.Frame):
         self.m_constant_title = wx.StaticText(panel, label=u"Back code setting")
 
         self.m_direction_title = wx.StaticText(panel, label=u"Direction")
-        self.m_direction_input = wx.TextCtrl(panel, value=self.parameter_converter.BACK_DIRECTION)
+        self.m_direction_input = wx.TextCtrl(panel, value=self.converter.BACK_DIRECTION)
 
         self.m_interval_title = wx.StaticText(panel, label=u"Interval")
-        self.m_interval_input = wx.TextCtrl(panel, value=self.parameter_converter.BACK_INTERVAL)
+        self.m_interval_input = wx.TextCtrl(panel, value=self.converter.BACK_INTERVAL)
 
         self.m_step_count_title = wx.StaticText(panel, label=u"Step count")
-        self.m_step_count_input = wx.TextCtrl(panel, value=self.parameter_converter.BACK_STEP_COUNT)
+        self.m_step_count_input = wx.TextCtrl(panel, value=self.converter.BACK_STEP_COUNT)
 
         self.m_pause_time_high_title = wx.StaticText(panel, label=u"Pause time high")
-        self.m_pause_time_high_input = wx.TextCtrl(panel, value=self.parameter_converter.BACK_PAUSE_TIME_HIGH)
+        self.m_pause_time_high_input = wx.TextCtrl(panel, value=self.converter.BACK_PAUSE_TIME_HIGH)
 
         self.m_pause_time_low_title = wx.StaticText(panel, label=u"Pause time low")
-        self.m_pause_time_low_input = wx.TextCtrl(panel, value=self.parameter_converter.BACK_PAUSE_TIME_LOW)
+        self.m_pause_time_low_input = wx.TextCtrl(panel, value=self.converter.BACK_PAUSE_TIME_LOW)
 
 
         #
@@ -301,7 +301,7 @@ class smcsc_frame(wx.Frame):
     #
     def get_m_com_choices(self):
         m_com_choices = []
-        port_list = list(serial.tools.list_ports.comports())
+        port_list = list(comports())
         if len(port_list) > 0:
             for port in port_list:
                 m_com_choices.append(port[0])
@@ -358,19 +358,19 @@ class smcsc_frame(wx.Frame):
         pause_time_low = str(self.m_pause_time_low_input.GetValue())
 
         if self.is_one_bit_hex("Direction", direction):
-            self.parameter_converter.BACK_DIRECTION = direction
+            self.converter.BACK_DIRECTION = direction
 
         if self.is_one_bit_hex("Interval", interval):
-            self.parameter_converter.BACK_INTERVAL = interval
+            self.converter.BACK_INTERVAL = interval
 
         if self.is_two_bit_hex("Step count", step_count):
-            self.parameter_converter.BACK_STEP_COUNT = step_count
+            self.converter.BACK_STEP_COUNT = step_count
 
         if self.is_two_bit_hex("Pause time high", pause_time_high):
-            self.parameter_converter.BACK_PAUSE_TIME_HIGH = pause_time_high
+            self.converter.BACK_PAUSE_TIME_HIGH = pause_time_high
 
         if self.is_two_bit_hex("Pause time low", pause_time_low):
-            self.parameter_converter.BACK_PAUSE_TIME_LOW = pause_time_low
+            self.converter.BACK_PAUSE_TIME_LOW = pause_time_low
 
 
     #
@@ -471,7 +471,7 @@ class smcsc_frame(wx.Frame):
             command = command_string.split()
 
             try:
-                code = self.parameter_converter.convert(command)
+                code = self.converter.convert(command)
 
             except Exception as e:
                 dia = wx.MessageDialog(None, "Command Error in line: " + str(line_number) + "\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
@@ -492,7 +492,7 @@ class smcsc_frame(wx.Frame):
 
             self.m_action_list.InsertStringItem(action_index, str(action_index + 1))
             self.m_action_list.SetStringItem(action_index, 1, str(" ".join(command)))
-            self.m_action_list.SetStringItem(action_index, 2, str(" ".join(self.parameter_converter.convert(command))))
+            self.m_action_list.SetStringItem(action_index, 2, str(" ".join(self.converter.convert(command))))
             self.m_action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
             self.m_action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
             self.m_action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
@@ -535,7 +535,7 @@ class smcsc_frame(wx.Frame):
         try:
             self.set_constant()
             command = str(self.m_send_input.GetValue()).split()
-            code = self.parameter_converter.convert(command)
+            code = self.converter.convert(command)
             self.ser.write("".join(code).decode("hex"))
 
             #print "[command: ", command, "]"
