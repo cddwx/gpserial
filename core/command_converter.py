@@ -14,7 +14,7 @@ ALT {step} {direction} {speed} {distance} {interval} {count}
 
 from decimal import Decimal, ROUND_HALF_UP, ROUND_UP, ROUND_DOWN
 
-class smcsc_command_natural:
+class command_converter:
     BACK_DIRECTION = "0"
     BACK_INTERVAL = "5"
     BACK_STEP_COUNT = "00"
