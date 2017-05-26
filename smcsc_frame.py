@@ -328,25 +328,25 @@ class smcsc_frame(wx.Frame):
 
     def is_one_bit_hex(self, name, string):
         if (len(string) != 1):
-            raise ValueError(name + " length is wrong! Need to be 1 bit.")
+            raise ValueError("Constant set error!\n" + name + " length is wrong! Need to be 1 bit.")
 
         if (not self.is_hex(string)):
-            raise ValueError(name + " is not hex string!")
+            raise ValueError("Constant set error!\n" + name + " is not hex string!")
 
         if ((int(string, 16) < 0) or (int(string, 16) > 15)):
-            raise ValueError(name + " is exced the range 0--F!")
+            raise ValueError("Constant set error!\n" + name + " is exced the range 0--F!")
 
         return True
 
     def is_two_bit_hex(self, name, string):
         if (len(string) != 2):
-            raise ValueError(name + " length is wrong! Need to be 2 bit.")
+            raise ValueError("Constant set error!\n" + name + " length is wrong! Need to be 2 bit.")
 
         if (not self.is_hex(string)):
-            raise ValueError(name + " is not hex string!")
+            raise ValueError("Constant set error!\n" + name + " is not hex string!")
 
         if ((int(string, 16) < 0) or (int(string, 16) > 255)):
-            raise ValueError(name + " is exced the range 00--FF!")
+            raise ValueError("Constant set error!\n" + name + " is exced the range 00--FF!")
 
         return True
 
@@ -357,28 +357,20 @@ class smcsc_frame(wx.Frame):
         pause_time_high = str(self.m_pause_time_high_input.GetValue())
         pause_time_low = str(self.m_pause_time_low_input.GetValue())
 
-        try:
-            if self.is_one_bit_hex("Direction", direction):
-                self.parameter_converter.BACK_DIRECTION = direction
+        if self.is_one_bit_hex("Direction", direction):
+            self.parameter_converter.BACK_DIRECTION = direction
 
-            if self.is_one_bit_hex("Interval", interval):
-                self.parameter_converter.BACK_INTERVAL = interval
+        if self.is_one_bit_hex("Interval", interval):
+            self.parameter_converter.BACK_INTERVAL = interval
 
-            if self.is_two_bit_hex("Step count", step_count):
-                self.parameter_converter.BACK_STEP_COUNT = step_count
+        if self.is_two_bit_hex("Step count", step_count):
+            self.parameter_converter.BACK_STEP_COUNT = step_count
 
-            if self.is_two_bit_hex("Pause time high", pause_time_high):
-                self.parameter_converter.BACK_PAUSE_TIME_HIGH = pause_time_high
+        if self.is_two_bit_hex("Pause time high", pause_time_high):
+            self.parameter_converter.BACK_PAUSE_TIME_HIGH = pause_time_high
 
-            if self.is_two_bit_hex("Pause time low", pause_time_low):
-                self.parameter_converter.BACK_PAUSE_TIME_LOW = pause_time_low
-
-        except ValueError as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
-            dia.ShowModal()
-            dia.Destroy()
-
-            return
+        if self.is_two_bit_hex("Pause time low", pause_time_low):
+            self.parameter_converter.BACK_PAUSE_TIME_LOW = pause_time_low
 
 
     #
@@ -463,12 +455,22 @@ class smcsc_frame(wx.Frame):
 
             return
 
-        command_string_list = str(self.m_write_area.GetValue()).splitlines()
+        try:
+            self.set_constant()
 
+        except ValueError as e:
+            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+
+        command_string_list = str(self.m_write_area.GetValue()).splitlines()
         line_number = 1
         for command_string in command_string_list:
+            command = command_string.split()
+
             try:
-                command = command_string.split()
                 code = self.parameter_converter.convert(command)
 
             except Exception as e:
@@ -480,9 +482,8 @@ class smcsc_frame(wx.Frame):
 
             line_number = line_number + 1
 
-        self.m_action_list.DeleteAllItems()
-        self.set_constant()
 
+        self.m_action_list.DeleteAllItems()
         action_index = 0
         for command_string in command_string_list:
             command = command_string.split()
@@ -514,16 +515,16 @@ class smcsc_frame(wx.Frame):
 
             return
 
+        action_index = self.m_action_list.GetFirstSelected()
+        code = str(self.m_action_list.GetItemText(action_index, 2)).split()
+
+        #print "[code: ", code, "]"
+
         try:
-            action_index = self.m_action_list.GetFirstSelected()
-            code = str(self.m_action_list.GetItemText(action_index, 2)).split()
-
-            #print "[code: ", code, "]"
-
             self.ser.write("".join(code).decode("hex"))
 
         except Exception as e:
-            dia = wx.MessageDialog(None, "Write Failed!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -535,22 +536,13 @@ class smcsc_frame(wx.Frame):
             self.set_constant()
             command = str(self.m_send_input.GetValue()).split()
             code = self.parameter_converter.convert(command)
+            self.ser.write("".join(code).decode("hex"))
 
             #print "[command: ", command, "]"
             #print "[code: ", code, "]"
 
-        except Exception as e:
-            dia = wx.MessageDialog(None, "Send failed!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
-            dia.ShowModal()
-            dia.Destroy()
-
-            return
-
-        try:
-            self.ser.write("".join(code).decode("hex"))
-
-        except Exception as e:
-            dia = wx.MessageDialog(None, "Write Failed!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+        except (ValueError, Exception) as e:
+            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
