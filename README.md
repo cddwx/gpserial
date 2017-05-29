@@ -13,5 +13,5 @@ TODO:
 # Develop environment
 
 * Python 2.7.9
-* pyserial 3.2.1
+* pyserial 3.0.0(For compite with windows XP)
 * wxPython 3.0.1.1
