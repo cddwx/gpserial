@@ -490,21 +490,23 @@ class app_frame(wx.Frame):
 
 
     def on_action_send_button_clicked(self, event):
-        if (self.m_action_list.GetItemCount() == 0):
+        item_count = self.m_action_list.GetItemCount()
+        action_index = self.m_action_list.GetFirstSelected()
+
+        if (item_count == 0):
             dia = wx.MessageDialog(None, "The item list is empty!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
             return
 
-        if (self.m_action_list.GetFirstSelected() == -1):
+        if (action_index == -1):
             dia = wx.MessageDialog(None, "No item is selected!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
             return
 
-        action_index = self.m_action_list.GetFirstSelected()
         code = str(self.m_action_list.GetItemText(action_index, 2)).split()
 
         #print "[code: ", code, "]"
@@ -521,23 +523,24 @@ class app_frame(wx.Frame):
 
 
     def on_action_send_next_button_clicked(self, event):
-        if (self.m_action_list.GetItemCount() == 0):
+        item_count = self.m_action_list.GetItemCount()
+        action_index = self.m_action_list.GetFirstSelected()
+
+        if (item_count == 0):
             dia = wx.MessageDialog(None, "The item list is empty!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
             return
 
-        if (self.m_action_list.GetFirstSelected() == -1):
+        if (action_index == -1):
             dia = wx.MessageDialog(None, "No item is selected!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
             return
 
-        action_index = self.m_action_list.GetFirstSelected()
-
-        if ((action_index + 1) > self.m_action_list.GetItemCount()):
+        if ((action_index + 1) >= item_count):
             dia = wx.MessageDialog(None, "This is the last command!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
