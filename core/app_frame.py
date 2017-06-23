@@ -39,6 +39,7 @@ class app_frame(wx.Frame):
         self.m_action_list.InsertColumn(2, u"Hex code", format=wx.LIST_FORMAT_LEFT)
 
         self.m_action_send_button = wx.Button(panel, label=u"Send")
+        self.m_action_send_next_button = wx.Button(panel, label=u"Send next command")
 
 
         # Serial parameter setting.
@@ -128,6 +129,7 @@ class app_frame(wx.Frame):
         self.m_program_exit_button.Bind(wx.EVT_BUTTON, self.on_program_exit_button_clicked)
 
         self.m_action_send_button.Bind(wx.EVT_BUTTON, self.on_action_send_button_clicked)
+        self.m_action_send_next_button.Bind(wx.EVT_BUTTON, self.on_action_send_next_button_clicked)
 
         self.m_write_convert_button.Bind(wx.EVT_BUTTON, self.on_write_convert_button_clicked)
         self.m_send_button.Bind(wx.EVT_BUTTON, self.on_send_button_clicked)
@@ -137,33 +139,32 @@ class app_frame(wx.Frame):
         # Arrangement.
         #
 
-        # recieve_area_box
-        recieve_area_box = wx.BoxSizer(wx.VERTICAL)
-        recieve_area_box.Add(self.m_recieve_title, 0)
-        recieve_area_box.Add(self.m_recieve_area, 1, wx.EXPAND)
-        recieve_area_box.Add(self.m_recieve_clear_button, 0)
-
+        # up-setting_area-content-parameter-port
         setting_area_parameter_port_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_parameter_port_box.Add(self.m_serial_com_title, 1, wx.ALIGN_CENTER_VERTICAL)
         setting_area_parameter_port_box.Add(self.m_serial_com_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
+        # up-setting_area-content-parameter-bitrate
         setting_area_parameter_bitrate_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_parameter_bitrate_box.Add(self.m_serial_bitrate_title, 1, wx.ALIGN_CENTER_VERTICAL)
         setting_area_parameter_bitrate_box.Add(self.m_serial_bitrate_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
+        # up-setting_area-content-parameter-databit
         setting_area_parameter_databit_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_parameter_databit_box.Add(self.m_serial_databit_title, 1, wx.ALIGN_CENTER_VERTICAL)
         setting_area_parameter_databit_box.Add(self.m_serial_databit_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
+        # up-setting_area-content-parameter-checkbit
         setting_area_parameter_checkbit_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_parameter_checkbit_box.Add(self.m_serial_checkbit_title, 1, wx.ALIGN_CENTER_VERTICAL)
         setting_area_parameter_checkbit_box.Add(self.m_serial_checkbit_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
+        # up-setting_area-content-parameter-stopbit
         setting_area_parameter_stopbit_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_parameter_stopbit_box.Add(self.m_serial_stopbit_title, 1, wx.ALIGN_CENTER_VERTICAL)
         setting_area_parameter_stopbit_box.Add(self.m_serial_stopbit_select, 1, wx.ALIGN_CENTER_VERTICAL)
 
-        # setting_area_parameter_box
+        # up-setting_area-content-parameter
         setting_area_parameter_box = wx.BoxSizer(wx.VERTICAL)
         setting_area_parameter_box.Add(setting_area_parameter_port_box, 1, wx.EXPAND)
         setting_area_parameter_box.Add(setting_area_parameter_bitrate_box, 1, wx.EXPAND)
@@ -172,43 +173,48 @@ class app_frame(wx.Frame):
         setting_area_parameter_box.Add(setting_area_parameter_stopbit_box, 1, wx.EXPAND)
 
 
+        # up-setting_area-content-operate-check
         setting_area_operate_check_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_operate_check_box.Add(self.m_serial_check_button, 0, wx.ALIGN_CENTER_VERTICAL)
 
+        # up-setting_area-content-operate-open
         setting_area_operate_open_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_operate_open_box.Add(self.m_serial_open_button, 0, wx.ALIGN_CENTER_VERTICAL)
 
+        # up-setting_area-content-operate-close
         setting_area_operate_close_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_operate_close_box.Add(self.m_serial_close_button, 0, wx.ALIGN_CENTER_VERTICAL)
 
+        # up-setting_area-content-operate-exit
         setting_area_operate_exit_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_operate_exit_box.Add(self.m_program_exit_button, 0, wx.ALIGN_CENTER_VERTICAL)
         
-        # setting_area_operate_box
+        # up-setting_area-content-operate
         setting_area_operate_box = wx.BoxSizer(wx.VERTICAL)
         setting_area_operate_box.Add(setting_area_operate_check_box, 1, wx.ALIGN_CENTER)
         setting_area_operate_box.Add(setting_area_operate_open_box, 1, wx.ALIGN_CENTER)
         setting_area_operate_box.Add(setting_area_operate_close_box, 1, wx.ALIGN_CENTER)
         setting_area_operate_box.Add(setting_area_operate_exit_box, 1, wx.ALIGN_CENTER)
 
-        # setting_area_content_box
+        # up-setting_area-content
         setting_area_content_box = wx.BoxSizer(wx.HORIZONTAL)
         setting_area_content_box.Add(setting_area_parameter_box, 2, wx.EXPAND)
         setting_area_content_box.Add(setting_area_operate_box, 1, wx.EXPAND)
 
-        # setting_area_box
+        # up-setting_area
         setting_area_box = wx.BoxSizer(wx.VERTICAL)
         setting_area_box.Add(self.m_serial_title, 0)
         setting_area_box.Add(setting_area_content_box, 1, wx.EXPAND)
 
-        # send_area_box
-        send_area_box = wx.BoxSizer(wx.VERTICAL)
-        send_area_box.Add(self.m_action_title, 0)
-        send_area_box.Add(self.m_action_list, 1, wx.EXPAND)
-        send_area_box.Add(self.m_action_send_button, 0)
+
+        # up-recieve_area
+        recieve_area_box = wx.BoxSizer(wx.VERTICAL)
+        recieve_area_box.Add(self.m_recieve_title, 0)
+        recieve_area_box.Add(self.m_recieve_area, 1, wx.EXPAND)
+        recieve_area_box.Add(self.m_recieve_clear_button, 0)
 
 
-        # write_area_write_box
+        # down-write_area-content-write
         write_area_write_box = wx.BoxSizer(wx.VERTICAL)
         write_area_write_box.Add(self.m_write_title, 0)
         write_area_write_box.Add(self.m_write_area, 1, wx.EXPAND)
@@ -217,39 +223,9 @@ class app_frame(wx.Frame):
         write_area_write_box.Add(self.m_send_input, 0, wx.EXPAND)
         write_area_write_box.Add(self.m_send_button, 0)
 
-
-        '''
-        write_area_setting_direction_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_setting_direction_box.Add(self.m_direction_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        write_area_setting_direction_box.Add(self.m_direction_input, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        write_area_setting_interval_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_setting_interval_box.Add(self.m_interval_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        write_area_setting_interval_box.Add(self.m_interval_input, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        write_area_setting_step_count_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_setting_step_count_box.Add(self.m_step_count_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        write_area_setting_step_count_box.Add(self.m_step_count_input, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        write_area_setting_pause_time_high_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_setting_pause_time_high_box.Add(self.m_pause_time_high_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        write_area_setting_pause_time_high_box.Add(self.m_pause_time_high_input, 1, wx.ALIGN_CENTER_VERTICAL)
-
-        write_area_setting_pause_time_low_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_setting_pause_time_low_box.Add(self.m_pause_time_low_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        write_area_setting_pause_time_low_box.Add(self.m_pause_time_low_input, 1, wx.ALIGN_CENTER_VERTICAL)
-        '''
-
-        # write_area_setting_box
+        # down-write_area-content-setting
         write_area_setting_box = wx.BoxSizer(wx.VERTICAL)
         write_area_setting_box.Add(self.m_constant_title, 0, wx.BOTTOM, 5)
-        '''
-        write_area_setting_box.Add(write_area_setting_direction_box, 1, wx.EXPAND)
-        write_area_setting_box.Add(write_area_setting_interval_box, 1, wx.EXPAND)
-        write_area_setting_box.Add(write_area_setting_step_count_box, 1, wx.EXPAND)
-        write_area_setting_box.Add(write_area_setting_pause_time_high_box, 1, wx.EXPAND)
-        write_area_setting_box.Add(write_area_setting_pause_time_low_box, 1, wx.EXPAND)
-        '''
         write_area_setting_box.Add(self.m_direction_title, 0)
         write_area_setting_box.Add(self.m_direction_input, 0, wx.EXPAND | wx.BOTTOM, 5)
         write_area_setting_box.Add(self.m_interval_title, 0)
@@ -261,26 +237,39 @@ class app_frame(wx.Frame):
         write_area_setting_box.Add(self.m_pause_time_low_title, 0)
         write_area_setting_box.Add(self.m_pause_time_low_input, 0, wx.EXPAND | wx.BOTTOM, 5)
 
-        # write_area_content_box
+        # down-write_area-content
         write_area_content_box = wx.BoxSizer(wx.HORIZONTAL)
         write_area_content_box.Add(write_area_write_box, 3, wx.EXPAND)
         write_area_content_box.Add(write_area_setting_box, 2, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
 
-        # write_area_box
+        # down-write_area
         write_area_box = wx.BoxSizer(wx.VERTICAL)
         write_area_box.Add(write_area_content_box, 1, wx.EXPAND)
 
-        # up_box
+
+        # down-send_area-operate
+        send_area_operate_box = wx.BoxSizer(wx.HORIZONTAL)
+        send_area_operate_box.Add(self.m_action_send_button, 0)
+        send_area_operate_box.Add(self.m_action_send_next_button, 0)
+
+        # down-send_area
+        send_area_box = wx.BoxSizer(wx.VERTICAL)
+        send_area_box.Add(self.m_action_title, 0)
+        send_area_box.Add(self.m_action_list, 1, wx.EXPAND)
+        send_area_box.Add(send_area_operate_box, 0, wx.EXPAND)
+
+
+        # up
         up_box = wx.BoxSizer(wx.HORIZONTAL)
         up_box.Add(setting_area_box, 1, wx.EXPAND | wx.ALL, 5)
         up_box.Add(recieve_area_box, 2, wx.EXPAND | wx.ALL, 5)
 
-        # down_box
+        # down
         down_box = wx.BoxSizer(wx.HORIZONTAL)
         down_box.Add(write_area_box, 1, wx.EXPAND | wx.ALL, 5)
         down_box.Add(send_area_box, 2, wx.EXPAND | wx.ALL, 5)
 
-        # main_box
+        # main
         main_box = wx.BoxSizer(wx.VERTICAL)
         main_box.Add(up_box, 1, wx.EXPAND | wx.ALL, 5)
         main_box.Add(down_box, 2, wx.EXPAND | wx.ALL, 5)
@@ -517,6 +506,46 @@ class app_frame(wx.Frame):
 
         action_index = self.m_action_list.GetFirstSelected()
         code = str(self.m_action_list.GetItemText(action_index, 2)).split()
+
+        #print "[code: ", code, "]"
+
+        try:
+            self.ser.write("".join(code).decode("hex"))
+
+        except Exception as e:
+            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+
+
+    def on_action_send_next_button_clicked(self, event):
+        if (self.m_action_list.GetItemCount() == 0):
+            dia = wx.MessageDialog(None, "The item list is empty!", "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+
+        if (self.m_action_list.GetFirstSelected() == -1):
+            dia = wx.MessageDialog(None, "No item is selected!", "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+
+        action_index = self.m_action_list.GetFirstSelected()
+
+        if ((action_index + 1) > self.m_action_list.GetItemCount()):
+            dia = wx.MessageDialog(None, "This is the last command!", "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
+
+        self.m_action_list.Select(action_index + 1)
+        code = str(self.m_action_list.GetItemText(action_index + 1, 2)).split()
 
         #print "[code: ", code, "]"
 
