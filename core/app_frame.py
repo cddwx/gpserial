@@ -361,6 +361,32 @@ class app_frame(wx.Frame):
         if self.is_two_bit_hex("Pause time low", pause_time_low):
             self.converter.BACK_PAUSE_TIME_LOW = pause_time_low
 
+    def parse(self, string):
+        if (string == ""):
+            raise Exception("Command list is empty!")
+
+        string_list = string.splitlines()
+
+        line_number = 1
+        code_list = []
+        for string in string_list:
+            if ((string == "") or (string[0] == ";")):
+                line_number = line_number + 1
+                continue
+
+            command = string.split()
+
+            try:
+                code = self.converter.convert(command)
+
+            except Exception as e:
+                raise Exception("Command Error in line: " + str(line_number) + "\n" + e.message)
+
+            code_list.append(code)
+            line_number = line_number + 1
+
+        return code_list
+
 
     #
     # Event handle functions
@@ -447,41 +473,32 @@ class app_frame(wx.Frame):
 
             return
 
-        if (self.m_write_area.GetValue() == ""):
-            dia = wx.MessageDialog(None, "Command list is empty!", "Error", wx.OK | wx.ICON_ERROR)
+        command_string = str(self.m_write_area.GetValue())
+
+        try:
+            code_list = self.parse(command_string)
+
+        except Exception as e:
+            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
             return
 
-        command_string_list = str(self.m_write_area.GetValue()).splitlines()
-        line_number = 1
-        for command_string in command_string_list:
-            command = command_string.split()
-
-            try:
-                code = self.converter.convert(command)
-
-            except Exception as e:
-                dia = wx.MessageDialog(None, "Command Error in line: " + str(line_number) + "\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
-                dia.ShowModal()
-                dia.Destroy()
-
-                return
-
-            line_number = line_number + 1
-
-
         self.m_action_list.DeleteAllItems()
+
         action_index = 0
-        for command_string in command_string_list:
-            command = command_string.split()
+        for string in command_string.splitlines():
+            if ((string == "") or (string[0] == ";")):
+                continue
+
+            command = string.split()
 
             #print "[command: ", command, "]"
 
             self.m_action_list.InsertStringItem(action_index, str(action_index + 1))
             self.m_action_list.SetStringItem(action_index, 1, str(" ".join(command)))
-            self.m_action_list.SetStringItem(action_index, 2, str(" ".join(self.converter.convert(command))))
+            self.m_action_list.SetStringItem(action_index, 2, str(" ".join(code_list[action_index])))
             self.m_action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
             self.m_action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
             self.m_action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
