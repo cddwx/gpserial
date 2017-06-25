@@ -100,21 +100,21 @@ class app_frame(wx.Frame):
         self.m_send_input = wx.TextCtrl(panel)
         self.m_send_button = wx.Button(panel, label=u"Convert and send")
 
-        self.m_constant_title = wx.StaticText(panel, label=u"Back code setting")
+        self.m_back_code_setting_title = wx.StaticText(panel, label=u"Back code setting")
 
-        self.m_direction_title = wx.StaticText(panel, label=u"Direction")
+        self.m_direction_title = wx.StaticText(panel, label=u"Back direction")
         self.m_direction_input = wx.TextCtrl(panel, value=self.converter.BACK_DIRECTION)
 
-        self.m_interval_title = wx.StaticText(panel, label=u"Interval")
+        self.m_interval_title = wx.StaticText(panel, label=u"Back interval")
         self.m_interval_input = wx.TextCtrl(panel, value=self.converter.BACK_INTERVAL)
 
-        self.m_step_count_title = wx.StaticText(panel, label=u"Step count")
+        self.m_step_count_title = wx.StaticText(panel, label=u"Back step count")
         self.m_step_count_input = wx.TextCtrl(panel, value=self.converter.BACK_STEP_COUNT)
 
-        self.m_pause_time_high_title = wx.StaticText(panel, label=u"Pause time high")
+        self.m_pause_time_high_title = wx.StaticText(panel, label=u"Back pause time high")
         self.m_pause_time_high_input = wx.TextCtrl(panel, value=self.converter.BACK_PAUSE_TIME_HIGH)
 
-        self.m_pause_time_low_title = wx.StaticText(panel, label=u"Pause time low")
+        self.m_pause_time_low_title = wx.StaticText(panel, label=u"Back pause time low")
         self.m_pause_time_low_input = wx.TextCtrl(panel, value=self.converter.BACK_PAUSE_TIME_LOW)
 
 
@@ -214,38 +214,53 @@ class app_frame(wx.Frame):
         recieve_area_box.Add(self.m_recieve_clear_button, 0)
 
 
-        # down-write_area-content-write
+        # down-write_area-setting-direction
+        write_area_setting_direction_box = wx.BoxSizer(wx.HORIZONTAL)
+        write_area_setting_direction_box.Add(self.m_direction_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        write_area_setting_direction_box.Add(self.m_direction_input, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        # down-write_area-setting-interval
+        write_area_setting_interval_box = wx.BoxSizer(wx.HORIZONTAL)
+        write_area_setting_interval_box.Add(self.m_interval_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        write_area_setting_interval_box.Add(self.m_interval_input, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        # down-write_area-setting-step_count
+        write_area_setting_step_count_box = wx.BoxSizer(wx.HORIZONTAL)
+        write_area_setting_step_count_box.Add(self.m_step_count_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        write_area_setting_step_count_box.Add(self.m_step_count_input, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        # down-write_area-setting-pause_time_high
+        write_area_setting_pause_time_high_box = wx.BoxSizer(wx.HORIZONTAL)
+        write_area_setting_pause_time_high_box.Add(self.m_pause_time_high_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        write_area_setting_pause_time_high_box.Add(self.m_pause_time_high_input, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        # down-write_area-setting-pause_time_low
+        write_area_setting_pause_time_low_box = wx.BoxSizer(wx.HORIZONTAL)
+        write_area_setting_pause_time_low_box.Add(self.m_pause_time_low_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        write_area_setting_pause_time_low_box.Add(self.m_pause_time_low_input, 1, wx.ALIGN_CENTER_VERTICAL)
+
+        # down-write_area-setting
+        write_area_setting_box = wx.BoxSizer(wx.VERTICAL)
+        write_area_setting_box.Add(self.m_back_code_setting_title, 0)
+        write_area_setting_box.Add(write_area_setting_direction_box, 0, wx.EXPAND)
+        write_area_setting_box.Add(write_area_setting_interval_box, 0, wx.EXPAND)
+        write_area_setting_box.Add(write_area_setting_step_count_box, 0, wx.EXPAND)
+        write_area_setting_box.Add(write_area_setting_pause_time_high_box, 0, wx.EXPAND)
+        write_area_setting_box.Add(write_area_setting_pause_time_low_box, 0, wx.EXPAND)
+
+        # down-write_area-write
         write_area_write_box = wx.BoxSizer(wx.VERTICAL)
-        write_area_write_box.Add(self.m_write_title, 0)
+        write_area_write_box.Add(self.m_write_title, 0, wx.TOP, 10)
         write_area_write_box.Add(self.m_write_area, 1, wx.EXPAND)
         write_area_write_box.Add(self.m_write_convert_button, 0)
         write_area_write_box.Add(self.m_send_title, 0, wx.TOP, 10)
         write_area_write_box.Add(self.m_send_input, 0, wx.EXPAND)
         write_area_write_box.Add(self.m_send_button, 0)
 
-        # down-write_area-content-setting
-        write_area_setting_box = wx.BoxSizer(wx.VERTICAL)
-        write_area_setting_box.Add(self.m_constant_title, 0, wx.BOTTOM, 5)
-        write_area_setting_box.Add(self.m_direction_title, 0)
-        write_area_setting_box.Add(self.m_direction_input, 0, wx.EXPAND | wx.BOTTOM, 5)
-        write_area_setting_box.Add(self.m_interval_title, 0)
-        write_area_setting_box.Add(self.m_interval_input, 0, wx.EXPAND | wx.BOTTOM, 5)
-        write_area_setting_box.Add(self.m_step_count_title, 0)
-        write_area_setting_box.Add(self.m_step_count_input, 0, wx.EXPAND | wx.BOTTOM, 5)
-        write_area_setting_box.Add(self.m_pause_time_high_title, 0)
-        write_area_setting_box.Add(self.m_pause_time_high_input, 0, wx.EXPAND | wx.BOTTOM, 5)
-        write_area_setting_box.Add(self.m_pause_time_low_title, 0)
-        write_area_setting_box.Add(self.m_pause_time_low_input, 0, wx.EXPAND | wx.BOTTOM, 5)
-
-        # down-write_area-content
-        write_area_content_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_content_box.Add(write_area_write_box, 3, wx.EXPAND)
-        write_area_content_box.Add(write_area_setting_box, 2, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 5)
-
         # down-write_area
         write_area_box = wx.BoxSizer(wx.VERTICAL)
-        write_area_box.Add(write_area_content_box, 1, wx.EXPAND)
-
+        write_area_box.Add(write_area_setting_box, 0, wx.EXPAND)
+        write_area_box.Add(write_area_write_box, 1, wx.EXPAND)
 
         # down-send_area-operate
         send_area_operate_box = wx.BoxSizer(wx.HORIZONTAL)
@@ -272,7 +287,7 @@ class app_frame(wx.Frame):
         # main
         main_box = wx.BoxSizer(wx.VERTICAL)
         main_box.Add(up_box, 1, wx.EXPAND | wx.ALL, 5)
-        main_box.Add(down_box, 2, wx.EXPAND | wx.ALL, 5)
+        main_box.Add(down_box, 3, wx.EXPAND | wx.ALL, 5)
 
         panel.SetSizer(main_box)
         panel.Layout()
