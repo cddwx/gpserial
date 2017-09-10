@@ -1,6 +1,8 @@
 # Description
 
-A client program for a step motor control system. [一个适用于某个步进电机控制系统的客户端程序。]
+A client program for a step motor control system.
+
+![主界面](main.png)
 
 
 # Note
