@@ -3,24 +3,17 @@
 
 import wx
 
-from wx.lib.pubsub import pub
-from serial import Serial
-
-from serial_thread import serial_thread
-from app_frame import app_frame
-
+from main_window import main_window
 
 class app_main(wx.App):
     def OnInit(self):
-        self.ser = Serial()
+        frame_title = u"SMCSC-1.0 OUYANG Lab"
 
-        self.thread = serial_thread(self.ser)
+        self.frame = main_window(frame_title)
 
-        self.frame = app_frame(self.ser)
-        pub.subscribe(self.frame.on_recieve_area_update, "update")
         self.frame.Show()
 
         return True
 
     def OnExit(self):
-        self.thread.stop()
+        pass

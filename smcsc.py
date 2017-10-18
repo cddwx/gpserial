@@ -3,9 +3,8 @@
 
 from core.app_main import app_main
 
-def main():
-    app = app_main()
-    app.MainLoop()
+NAME    = u"SMCSC(Step motor control system client) - OUYANG Lab"
+VERSION = 1.0
 
-if __name__ == '__main__':
-    main()
+app = app_main()
+app.MainLoop()
