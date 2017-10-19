@@ -38,6 +38,7 @@ class main_window(wx.Frame):
         pub.subscribe(self.on_recieve_area_update, "update")
         pub.subscribe(self.on_serial_read_error, "serial_read_error")
         pub.subscribe(self.on_run_write_error, "run_write_error")
+        pub.subscribe(self.on_run_seq_started, "run_seq_started")
         pub.subscribe(self.on_run_seq_finished, "run_seq_finished")
 
 
@@ -125,7 +126,7 @@ class main_window(wx.Frame):
         self.m_write_convert_button     = wx.Button(self.panel, label=u"Check seq")
         self.m_write_run_seq_button     = wx.Button(self.panel, label=u"Run seq")
         self.m_write_run_seq_button.Enable(False)
-        self.m_write_stop_seq_button     = wx.Button(self.panel, label=u"Stop seq")
+        self.m_write_stop_seq_button     = wx.Button(self.panel, label=u"Stop after here")
         self.m_write_stop_seq_button.Enable(False)
 
         self.m_write_reset_button     = wx.Button(self.panel, label=u"*** MCU RESET ***")
@@ -699,11 +700,52 @@ class main_window(wx.Frame):
 
 
     ###########################################################################
+    # Run seq started.
+    ###########################################################################
+    def on_run_seq_started(self, data):
+        self.m_serial_close_button.Enable(False)
+
+        self.m_write_convert_button.Enable(False)
+        self.m_write_run_seq_button.Enable(False)
+        self.m_write_stop_seq_button.Enable(True)
+
+        self.m_write_command_reset_button.Enable(False)
+        self.m_write_run_button.Enable(False)
+        self.m_write_show_ram_button.Enable(False)
+        self.m_write_show_eeprom_button.Enable(False)
+        self.m_write_write_button.Enable(False)
+        self.m_write_read_button.Enable(False)
+
+        self.m_send_button.Enable(False)
+        self.m_send_hex_button.Enable(False)
+
+        self.m_action_send_button.Enable(False)
+        self.m_action_send_next_button.Enable(False)
+
+
+
+    ###########################################################################
     # Run seq finished.
     ###########################################################################
     def on_run_seq_finished(self, data):
+        self.m_serial_close_button.Enable(True)
+
+        self.m_write_convert_button.Enable(True)
         self.m_write_run_seq_button.Enable(True)
         self.m_write_stop_seq_button.Enable(False)
+
+        self.m_write_command_reset_button.Enable(True)
+        self.m_write_run_button.Enable(True)
+        self.m_write_show_ram_button.Enable(True)
+        self.m_write_show_eeprom_button.Enable(True)
+        self.m_write_write_button.Enable(True)
+        self.m_write_read_button.Enable(True)
+
+        self.m_send_button.Enable(True)
+        self.m_send_hex_button.Enable(True)
+
+        self.m_action_send_button.Enable(True)
+        self.m_action_send_next_button.Enable(True)
 
 
     ###########################################################################
@@ -738,9 +780,6 @@ class main_window(wx.Frame):
         self.run_thread = run_thread(self.serial_port, self.serial_read_thread, code_list)
         self.run_thread.start()
 
-        self.m_write_run_seq_button.Enable(False)
-        self.m_write_stop_seq_button.Enable(True)
-
 
     ###########################################################################
     # Stop seq button clicked
@@ -769,20 +808,40 @@ class main_window(wx.Frame):
     ###########################################################################
     def on_write_reset_button_clicked(self, event):
         try:
-            self.serial_port.write("".join(self.converter.RESET).decode("hex"))
-        except (ValueError, Exception) as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            run_seq = self.serial_read_thread.event_run_seq.is_set()
+        except Exception as e:
+            serial_read_thread_alive = False
+        else:
+            serial_read_thread_alive = True
+
+        if (serial_read_thread_alive == True):
+            #
+            # When running seq.
+            #
+            if (self.serial_read_thread.event_run_seq.is_set() == True):
+                self.run_thread.event_stop.set()
+                self.serial_read_thread.event_run_finished.set()
+            #
+            # When NOT running seq.
+            #
+            else:
+                pass
+
+            try:
+                self.serial_port.write("".join(self.converter.RESET).decode("hex"))
+            except (ValueError, Exception) as e:
+                dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+                dia.ShowModal()
+                dia.Destroy()
+
+                return
+        else:
+            dia = wx.MessageDialog(None, "Serial port not open.", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
             return
-            
-        try:
-            self.run_thread.event_stop.set()
-        except Exception as e:
-            pass
-        
-        self.serial_read_thread.event_run_finished.set()
+
 
 
     ###########################################################################

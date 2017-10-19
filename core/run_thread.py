@@ -18,6 +18,7 @@ class run_thread(threading.Thread):
         self.event_stop = threading.Event()
 
     def run(self):
+        wx.CallAfter(pub.sendMessage, "run_seq_started", data = "OK")
         self.serial_read_thread.event_run_seq.set()
 
         for code in self.code_list:
