@@ -611,7 +611,7 @@ class main_window(wx.Frame):
             pass
 
         try:
-            self.serial_read_thread.event_run_finished.set()
+            self.run_thread.event_run.set()
         except Exception as e:
             pass
 

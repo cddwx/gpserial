@@ -16,30 +16,29 @@ class run_thread(threading.Thread):
         self.code_list = code_list
 
         self.event_stop = threading.Event()
-        self.event_run_seq = threading.Event()
 
     def run(self):
-        self.serial_read_thread.event_run_finished.clear()
-        self.event_run_seq.set()
+        self.serial_read_thread.event_run_seq.set()
 
         for code in self.code_list:
             if (self.event_stop.is_set()):
+                self.serial_read_thread.event_run_seq.clear()
                 wx.CallAfter(pub.sendMessage, "run_seq_finished", data = "OK")
-                self.event_run_seq.clear()
 
                 return
             else:
                 try:
                     self.serial_port.write("".join(code).decode("hex"))
                 except (ValueError, Exception) as e:
+                    self.serial_read_thread.event_run_seq.clear()
                     wx.CallAfter(pub.sendMessage, "run_write_error", data = e.message)
-                    self.event_run_seq.clear()
+                    wx.CallAfter(pub.sendMessage, "run_seq_finished", data = "OK")
 
                     return
-                else:
-                    self.serial_read_thread.event_run_finished.wait()
-                    self.serial_read_thread.event_run_finished.clear()
-                    time.sleep(0.1)
 
+                #print code
+                self.serial_read_thread.event_run_finished.wait()
+                self.serial_read_thread.event_run_finished.clear()
+
+        self.serial_read_thread.event_run_seq.clear()
         wx.CallAfter(pub.sendMessage, "run_seq_finished", data = "OK")
-        self.event_run_seq.clear()
