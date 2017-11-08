@@ -21,6 +21,7 @@ class run_thread(threading.Thread):
         wx.CallAfter(pub.sendMessage, "run_seq_started", data = "OK")
         self.serial_read_thread.event_run_seq.set()
 
+        count = 0
         for code in self.code_list:
             if (self.event_stop.is_set()):
                 self.serial_read_thread.event_run_seq.clear()
@@ -29,7 +30,7 @@ class run_thread(threading.Thread):
                 return
             else:
                 try:
-                    self.serial_port.write("".join(code).decode("hex"))
+                    self.serial_port.write("".join(code[1]).decode("hex"))
                 except (ValueError, Exception) as e:
                     self.serial_read_thread.event_run_seq.clear()
                     wx.CallAfter(pub.sendMessage, "run_write_error", data = e.message)
@@ -40,6 +41,9 @@ class run_thread(threading.Thread):
                 #print code
                 self.serial_read_thread.event_run_finished.wait()
                 self.serial_read_thread.event_run_finished.clear()
+
+                wx.CallAfter(pub.sendMessage, "single_command_finished", data = [self.code_list, count])
+                count = count + 1
 
         self.serial_read_thread.event_run_seq.clear()
         wx.CallAfter(pub.sendMessage, "run_seq_finished", data = "OK")

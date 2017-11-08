@@ -2,15 +2,17 @@
 # coding=utf-8
 
 import time
+import datetime
 import wx
 
 from wx.lib.pubsub import pub
 from serial import Serial
 from serial.tools.list_ports import comports
 
-from command_converter import command_converter
+from command import command
 from run_thread import run_thread
 from serial_read_thread import serial_read_thread
+from progress_thread import progress_thread
 
 class main_frame(wx.Frame):
     ############################################################################
@@ -27,7 +29,7 @@ class main_frame(wx.Frame):
         )
 
         self.serial_port = Serial()
-        self.converter = command_converter()
+        self.command = command()
 
 
         self.create_objects()
@@ -40,6 +42,7 @@ class main_frame(wx.Frame):
         pub.subscribe(self.on_run_write_error, "run_write_error")
         pub.subscribe(self.on_run_seq_started, "run_seq_started")
         pub.subscribe(self.on_run_seq_finished, "run_seq_finished")
+        pub.subscribe(self.on_single_command_finished, "single_command_finished")
 
 
     ###########################################################################
@@ -62,6 +65,7 @@ class main_frame(wx.Frame):
         self.action_list.InsertColumn(0, u"Id", format=wx.LIST_FORMAT_LEFT)
         self.action_list.InsertColumn(1, u"Command", format=wx.LIST_FORMAT_LEFT)
         self.action_list.InsertColumn(2, u"Hex code", format=wx.LIST_FORMAT_LEFT)
+        self.action_list.InsertColumn(3, u"Time used", format=wx.LIST_FORMAT_LEFT)
 
         self.action_send_button = wx.Button(self.panel, label=u"Send")
         self.action_send_next_button = wx.Button(self.panel, label=u"Send next")
@@ -150,7 +154,7 @@ class main_frame(wx.Frame):
     def connect_events(self):
         self.recieve_clear_button.Bind(wx.EVT_BUTTON, self.on_recieve_clear_button_clicked)
 
-        self.serial_refresh_button.Bind(wx.EVT_BUTTON, self.on_serial_check_button_clicked)
+        self.serial_refresh_button.Bind(wx.EVT_BUTTON, self.on_serial_refresh_button_clicked)
         self.serial_open_button.Bind(wx.EVT_BUTTON, self.on_serial_open_button_clicked)
         self.serial_close_button.Bind(wx.EVT_BUTTON, self.on_serial_close_button_clicked)
         self.program_exit_button.Bind(wx.EVT_BUTTON, self.on_program_exit_button_clicked)
@@ -158,20 +162,20 @@ class main_frame(wx.Frame):
         self.action_send_button.Bind(wx.EVT_BUTTON, self.on_action_send_button_clicked)
         self.action_send_next_button.Bind(wx.EVT_BUTTON, self.on_action_send_next_button_clicked)
 
-        self.seq_convert_button.Bind(wx.EVT_BUTTON, self.on_write_convert_button_clicked)
-        self.seq_run_button.Bind(wx.EVT_BUTTON, self.on_write_run_seq_button_clicked)
-        self.seq_stop_button.Bind(wx.EVT_BUTTON, self.on_write_stop_seq_button_clicked)
+        self.seq_convert_button.Bind(wx.EVT_BUTTON, self.on_seq_convert_button_clicked)
+        self.seq_run_button.Bind(wx.EVT_BUTTON, self.on_seq_run_button_clicked)
+        self.seq_stop_button.Bind(wx.EVT_BUTTON, self.on_seq_stop_button_clicked)
 
-        self.single_send_button.Bind(wx.EVT_BUTTON, self.on_send_button_clicked)
-        self.single_send_hex_button.Bind(wx.EVT_BUTTON, self.on_send_hex_button_clicked)
+        self.single_send_button.Bind(wx.EVT_BUTTON, self.on_single_send_button_clicked)
+        self.single_send_hex_button.Bind(wx.EVT_BUTTON, self.on_single_send_hex_button_clicked)
 
-        self.mcu_reset_button.Bind(wx.EVT_BUTTON, self.on_write_reset_button_clicked)
-        self.send_reset_button.Bind(wx.EVT_BUTTON, self.on_write_command_reset_button_clicked)
-        self.single_run_button.Bind(wx.EVT_BUTTON, self.on_write_run_button_clicked)
-        self.show_ram_button.Bind(wx.EVT_BUTTON, self.on_write_show_ram_button_clicked)
-        self.show_eeprom_button.Bind(wx.EVT_BUTTON, self.on_write_show_eeprom_button_clicked)
-        self.write_eeprom_button.Bind(wx.EVT_BUTTON, self.on_write_write_button_clicked)
-        self.read_eeprom_button.Bind(wx.EVT_BUTTON, self.on_write_read_button_clicked)
+        self.mcu_reset_button.Bind(wx.EVT_BUTTON, self.on_mcu_reset_button_clicked)
+        self.send_reset_button.Bind(wx.EVT_BUTTON, self.on_send_reset_button_clicked)
+        self.single_run_button.Bind(wx.EVT_BUTTON, self.on_single_run_button_clicked)
+        self.show_ram_button.Bind(wx.EVT_BUTTON, self.on_show_ram_button_clicked)
+        self.show_eeprom_button.Bind(wx.EVT_BUTTON, self.on_show_eeprom_button_clicked)
+        self.write_eeprom_button.Bind(wx.EVT_BUTTON, self.on_write_eeprom_button_clicked)
+        self.read_eeprom_button.Bind(wx.EVT_BUTTON, self.on_read_eeprom_button_clicked)
 
 
     ############################################################################
@@ -474,66 +478,6 @@ class main_frame(wx.Frame):
         return True
 
 
-    ###########################################################################
-    # Set constant.
-    ###########################################################################
-    '''
-    def set_constant(self):
-        direction = self.m_direction_input.GetValue()
-        interval = self.m_interval_input.GetValue()
-        step_count = self.m_step_count_input.GetValue()
-        pause_time_high = self.m_pause_time_high_input.GetValue()
-        pause_time_low = self.m_pause_time_low_input.GetValue()
-
-        if self.is_one_bit_hex("Direction", direction):
-            self.converter.BACK_DIRECTION = direction
-
-        if self.is_one_bit_hex("Interval", interval):
-            self.converter.BACK_INTERVAL = interval
-
-        if self.is_two_bit_hex("Step count", step_count):
-            self.converter.BACK_STEP_COUNT = step_count
-
-        if self.is_two_bit_hex("Pause time high", pause_time_high):
-            self.converter.BACK_PAUSE_TIME_HIGH = pause_time_high
-
-        if self.is_two_bit_hex("Pause time low", pause_time_low):
-            self.converter.BACK_PAUSE_TIME_LOW = pause_time_low
-    '''
-
-
-    ###########################################################################
-    # Parse text and convert to code.
-    ###########################################################################
-    def parse_convert(self, string):
-        if (string == ""):
-            raise Exception("Command list is empty!")
-
-        else:
-            pass
-
-        string_list = string.splitlines()
-
-        line_number = 1
-        code_list = []
-        for string in string_list:
-            if ((string == "") or (string[0] == ";")):
-                line_number = line_number + 1
-                continue
-
-            command = string.split()
-
-            try:
-                code = self.converter.convert(command)
-            except Exception as e:
-                raise Exception("Command Error in line: " + str(line_number) + "\n" + e.message)
-
-            code_list.append(code)
-            line_number = line_number + 1
-
-        return code_list
-
-
     #
     # Event handle functions
     #
@@ -547,7 +491,7 @@ class main_frame(wx.Frame):
     ###########################################################################
     # Check com ports.
     ###########################################################################
-    def on_serial_check_button_clicked(self, event):
+    def on_serial_refresh_button_clicked(self, event):
         self.serial_port_choice.Set(self.get_port_choice())
         self.serial_port_choice.SetSelection(0)
 
@@ -564,7 +508,7 @@ class main_frame(wx.Frame):
     # Serial read error.
     ###########################################################################
     def on_serial_read_error(self, data):
-        dia = wx.MessageDialog(None, data, "Error", wx.OK | wx.ICON_ERROR)
+        dia = wx.MessageDialog(self, data, "Error", wx.OK | wx.ICON_ERROR)
         dia.ShowModal()
         dia.Destroy()
 
@@ -576,26 +520,34 @@ class main_frame(wx.Frame):
         try:
             self.serial_port.timeout = 1
             self.serial_port.xonxoff = 0
-            self.serial_port.port = self.serial_port_choice.GetValue()
-            self.serial_port.parity = self.serial_checkbit_choice.GetValue()[0]
-            self.serial_port.baudrate = int(self.serial_bitrate_choice.GetValue())
-            self.serial_port.bytesize = int(self.serial_databit_choice.GetValue())
-            self.serial_port.stopbits = int(self.serial_stopbit_choice.GetValue())
+            self.serial_port.port = self.serial_port_choice.GetString(self.serial_port_choice.GetSelection())
+            self.serial_port.baudrate = int(self.serial_bitrate_choice.GetString(self.serial_bitrate_choice.GetSelection()))
+            self.serial_port.parity = self.serial_checkbit_choice.GetString(self.serial_checkbit_choice.GetSelection())[0]
+            self.serial_port.bytesize = int(self.serial_databit_choice.GetString(self.serial_databit_choice.GetSelection()))
+            self.serial_port.stopbits = int(self.serial_stopbit_choice.GetString(self.serial_stopbit_choice.GetSelection()))
             self.serial_port.open()
         except Exception as e:
-            dia = wx.MessageDialog(None, "COMM Open Fail!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, "COMM Open Fail!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
             return
 
-        else:
-            self.serial_read_thread = serial_read_thread(self.serial_port, self)
-            self.serial_read_thread.start()
+        try:
+            self.serial_port.write("".join(self.command.COMMAND_RESET).decode("hex"))
+        except (ValueError, Exception) as e:
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
 
-            self.serial_open_button.Disable()
-            self.serial_close_button.Enable()
-            self.seq_run_button.Enable()
+            return
+
+        self.serial_read_thread = serial_read_thread(self.serial_port, self)
+        self.serial_read_thread.start()
+
+        self.serial_open_button.Disable()
+        self.serial_close_button.Enable()
+        self.seq_run_button.Enable()
 
 
     ###########################################################################
@@ -605,7 +557,7 @@ class main_frame(wx.Frame):
         try:
             self.serial_port.close()
         except Exception as e:
-            dia = wx.MessageDialog(None, "COMM close Fail!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, "COMM close Fail!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -646,26 +598,15 @@ class main_frame(wx.Frame):
 
 
     ###########################################################################
-    # Write convert button clicked
+    # Seq convert button clicked
     ###########################################################################
-    def on_write_convert_button_clicked(self, event):
-        '''
-        try:
-            self.set_constant()
-        except ValueError as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
-            dia.ShowModal()
-            dia.Destroy()
-
-            return
-        '''
-
+    def on_seq_convert_button_clicked(self, event):
         command_string = self.seq_textarea.GetValue()
 
         try:
-            code_list = self.parse_convert(command_string)
+            code_list = self.command.parse_convert(command_string)
         except Exception as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -674,29 +615,33 @@ class main_frame(wx.Frame):
         self.action_list.DeleteAllItems()
 
         action_index = 0
-        for string in command_string.splitlines():
-            if ((string == "") or (string[0] == ";")):
-                continue
-            else:
-                command = string.split()
+        for code in code_list:
+            command_time = datetime.timedelta(milliseconds=int(code[2]))
+            command_time_string = str(command_time.seconds / 3600) + "h " + str(command_time.seconds % 3600 / 60) + "m " + str(command_time.seconds % 3600 % 60) + "s"
 
-                #print "[command: ", command, "]"
+            self.action_list.InsertItem(action_index, str(action_index + 1))
+            self.action_list.SetItem(action_index, 1, str(" ".join(code[0])))
+            self.action_list.SetItem(action_index, 2, str(" ".join(code[1])))
+            self.action_list.SetItem(action_index, 3, command_time_string)
+            self.action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+            self.action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+            self.action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+            self.action_list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
 
-                self.action_list.InsertStringItem(action_index, str(action_index + 1))
-                self.action_list.SetStringItem(action_index, 1, str(" ".join(command)))
-                self.action_list.SetStringItem(action_index, 2, str(" ".join(code_list[action_index])))
-                self.action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-                self.action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-                self.action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+            action_index =  action_index + 1
 
-                action_index =  action_index + 1
+        total_time = datetime.timedelta(milliseconds=int(code_list[-1][3]))
+        total_time_string = str(total_time.seconds / 3600) + " hours " + str(total_time.seconds % 3600 / 60) + " minutes " + str(total_time.seconds % 3600 % 60) + " seconds"
+        dia = wx.MessageDialog(self,  "Total time: " + total_time_string, "Total time", wx.OK | wx.ICON_INFORMATION)
+        dia.ShowModal()
+        dia.Destroy()
 
 
     ###########################################################################
     # Run write error.
     ###########################################################################
     def on_run_write_error(self, data):
-        dia = wx.MessageDialog(None, data, "Error", wx.OK | wx.ICON_ERROR)
+        dia = wx.MessageDialog(self, data, "Error", wx.OK | wx.ICON_ERROR)
         dia.ShowModal()
         dia.Destroy()
 
@@ -730,6 +675,37 @@ class main_frame(wx.Frame):
 
 
     ###########################################################################
+    # Single command finished.
+    ###########################################################################
+    def on_single_command_finished(self, data):
+        code_list = data[0]
+        count = data[1]
+
+        if ((count + 1) < len(code_list)):
+            self.action_list.Select(count + 1)
+            self.action_list.Focus(count + 1)
+
+            """
+            command_time = datetime.timedelta(milliseconds=int(code_list[count + 1][2]))
+            command_time_string = str(command_time.seconds / 3600) + " hours " + str(command_time.seconds % 3600 / 60) + " minutes " + str(command_time.seconds % 3600 % 60) + " seconds"
+
+            message = '''\
+Current command             : %s
+Current command last time   : %s''' %(" ".join(code_list[count + 1][0]), command_time_string)
+            """
+        else:
+            """
+            message = "End."
+            """
+            pass
+
+        """
+        self.progress_dia.Update(int(code_list[count][3]), newmsg=message)
+        self.progress_dia.Fit()
+        """
+
+
+    ###########################################################################
     # Run seq finished.
     ###########################################################################
     def on_run_seq_finished(self, data):
@@ -756,12 +732,12 @@ class main_frame(wx.Frame):
     ###########################################################################
     # Run seq button clicked
     ###########################################################################
-    def on_write_run_seq_button_clicked(self, event):
+    def on_seq_run_button_clicked(self, event):
         '''
         try:
             self.set_constant()
         except ValueError as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -771,13 +747,44 @@ class main_frame(wx.Frame):
         command_string = self.seq_textarea.GetValue()
 
         try:
-            code_list = self.parse_convert(command_string)
+            code_list = self.command.parse_convert(command_string)
         except Exception as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
             return
+
+        self.action_list.DeleteAllItems()
+
+        action_index = 0
+        for code in code_list:
+            command_time = datetime.timedelta(milliseconds=int(code[2]))
+            command_time_string = str(command_time.seconds / 3600) + "h " + str(command_time.seconds % 3600 / 60) + "m " + str(command_time.seconds % 3600 % 60) + "s"
+
+            self.action_list.InsertItem(action_index, str(action_index + 1))
+            self.action_list.SetItem(action_index, 1, str(" ".join(code[0])))
+            self.action_list.SetItem(action_index, 2, str(" ".join(code[1])))
+            self.action_list.SetItem(action_index, 3, command_time_string)
+            self.action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+            self.action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+            self.action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+            self.action_list.SetColumnWidth(3, wx.LIST_AUTOSIZE)
+
+            action_index =  action_index + 1
+
+        self.action_list.Select(0)
+
+        """
+        command_time = datetime.timedelta(milliseconds=int(code_list[0][2]))
+        command_time_string = str(command_time.seconds / 3600) + " hours " + str(command_time.seconds % 3600 / 60) + " minutes " + str(command_time.seconds % 3600 % 60) + " seconds"
+
+        message = '''\
+Current command             : %s
+Current command last time   : %s''' %(" ".join(code_list[0][0]), command_time_string)
+
+        self.progress_dia = wx.ProgressDialog("Running", message , int(code_list[-1][3]), self, style=wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME | wx.PD_ESTIMATED_TIME)
+        """
 
         #
         # A thread, will tell serial_read_thread I am running a seq, please watch the serial port message, if "Running finished", please let me know.
@@ -789,7 +796,7 @@ class main_frame(wx.Frame):
     ###########################################################################
     # Stop seq button clicked
     ###########################################################################
-    def on_write_stop_seq_button_clicked(self, event):
+    def on_seq_stop_button_clicked(self, event):
         self.run_thread.event_stop.set()
         self.seq_stop_button.Disable()
 
@@ -797,11 +804,11 @@ class main_frame(wx.Frame):
     ###########################################################################
     # Command reset button clicked
     ###########################################################################
-    def on_write_command_reset_button_clicked(self, event):
+    def on_send_reset_button_clicked(self, event):
         try:
-            self.serial_port.write("".join(self.converter.COMMAND_RESET).decode("hex"))
+            self.serial_port.write("".join(self.command.COMMAND_RESET).decode("hex"))
         except (ValueError, Exception) as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -811,7 +818,7 @@ class main_frame(wx.Frame):
     ###########################################################################
     # Reset button clicked
     ###########################################################################
-    def on_write_reset_button_clicked(self, event):
+    def on_mcu_reset_button_clicked(self, event):
         try:
             run_seq = self.serial_read_thread.event_run_seq.is_set()
         except Exception as e:
@@ -833,15 +840,15 @@ class main_frame(wx.Frame):
                 pass
 
             try:
-                self.serial_port.write("".join(self.converter.RESET).decode("hex"))
+                self.serial_port.write("".join(self.command.RESET).decode("hex"))
             except (ValueError, Exception) as e:
-                dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+                dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
                 dia.ShowModal()
                 dia.Destroy()
 
                 return
         else:
-            dia = wx.MessageDialog(None, "Serial port not open.", "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, "Serial port not open.", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -852,11 +859,11 @@ class main_frame(wx.Frame):
     ###########################################################################
     # Run current button clicked
     ###########################################################################
-    def on_write_run_button_clicked(self, event):
+    def on_single_run_button_clicked(self, event):
         try:
-            self.serial_port.write("".join(self.converter.RUN).decode("hex"))
+            self.serial_port.write("".join(self.command.RUN).decode("hex"))
         except (ValueError, Exception) as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -866,11 +873,11 @@ class main_frame(wx.Frame):
     ###########################################################################
     # Show RAM button clicked
     ###########################################################################
-    def on_write_show_ram_button_clicked(self, event):
+    def on_show_ram_button_clicked(self, event):
         try:
-            self.serial_port.write("".join(self.converter.SHOW_RAM).decode("hex"))
+            self.serial_port.write("".join(self.command.SHOW_RAM).decode("hex"))
         except (ValueError, Exception) as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -880,11 +887,11 @@ class main_frame(wx.Frame):
     ###########################################################################
     # Show EEPROM button clicked
     ###########################################################################
-    def on_write_show_eeprom_button_clicked(self, event):
+    def on_show_eeprom_button_clicked(self, event):
         try:
-            self.serial_port.write("".join(self.converter.SHOW_EEPROM).decode("hex"))
+            self.serial_port.write("".join(self.command.SHOW_EEPROM).decode("hex"))
         except (ValueError, Exception) as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -894,11 +901,11 @@ class main_frame(wx.Frame):
     ###########################################################################
     # Write EEPROM button clicked
     ###########################################################################
-    def on_write_write_button_clicked(self, event):
+    def on_write_eeprom_button_clicked(self, event):
         try:
-            self.serial_port.write("".join(self.converter.WRITE).decode("hex"))
+            self.serial_port.write("".join(self.command.WRITE).decode("hex"))
         except (ValueError, Exception) as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -906,13 +913,13 @@ class main_frame(wx.Frame):
 
 
     ###########################################################################
-    # Read button clicked
+    # Read eeprom button clicked
     ###########################################################################
-    def on_write_read_button_clicked(self, event):
+    def on_read_eeprom_button_clicked(self, event):
         try:
-            self.serial_port.write("".join(self.converter.READ).decode("hex"))
+            self.serial_port.write("".join(self.command.READ).decode("hex"))
         except (ValueError, Exception) as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -920,14 +927,14 @@ class main_frame(wx.Frame):
 
 
     ###########################################################################
-    # Input send button clicked
+    # Single send button clicked
     ###########################################################################
-    def on_send_button_clicked(self, event):
+    def on_single_send_button_clicked(self, event):
         '''
         try:
             self.set_constant()
         except ValueError as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -936,13 +943,13 @@ class main_frame(wx.Frame):
 
         try:
             command = self.single_input.GetValue().split()
-            code = self.converter.convert(command)
+            code = self.command.convert(command)
             self.serial_port.write("".join(code).decode("hex"))
 
             #print "[command: ", command, "]"
             #print "[code: ", code, "]"
         except (ValueError, Exception) as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -950,15 +957,15 @@ class main_frame(wx.Frame):
 
 
     ###########################################################################
-    # Input send hex button clicked
+    # Single send hex button clicked
     ###########################################################################
-    def on_send_hex_button_clicked(self, event):
+    def on_single_send_hex_button_clicked(self, event):
         try:
             command = self.single_input.GetValue()
 
             self.serial_port.write(command.replace(" ", "").decode("hex"))
         except Exception as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -973,7 +980,7 @@ class main_frame(wx.Frame):
         action_index = self.action_list.GetFirstSelected()
 
         if (item_count == 0):
-            dia = wx.MessageDialog(None, "The item list is empty!", "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, "The item list is empty!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -983,7 +990,7 @@ class main_frame(wx.Frame):
             pass
 
         if (action_index == -1):
-            dia = wx.MessageDialog(None, "No item is selected!", "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, "No item is selected!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -999,7 +1006,7 @@ class main_frame(wx.Frame):
         try:
             self.serial_port.write("".join(code).decode("hex"))
         except Exception as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -1014,7 +1021,7 @@ class main_frame(wx.Frame):
         action_index = self.action_list.GetFirstSelected()
 
         if (item_count == 0):
-            dia = wx.MessageDialog(None, "The item list is empty!", "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, "The item list is empty!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -1024,7 +1031,7 @@ class main_frame(wx.Frame):
             pass
 
         if (action_index == -1):
-            dia = wx.MessageDialog(None, "No item is selected!", "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, "No item is selected!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -1034,7 +1041,7 @@ class main_frame(wx.Frame):
             pass
 
         if ((action_index + 1) >= item_count):
-            dia = wx.MessageDialog(None, "This is the last command!", "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, "This is the last command!", "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 
@@ -1044,6 +1051,7 @@ class main_frame(wx.Frame):
             pass
 
         self.action_list.Select(action_index + 1)
+        self.action_list.Focus(action_index + 1)
         code = self.action_list.GetItemText(action_index + 1, 2).split()
 
         #print "[code: ", code, "]"
@@ -1051,7 +1059,7 @@ class main_frame(wx.Frame):
         try:
             self.serial_port.write("".join(code).decode("hex"))
         except Exception as e:
-            dia = wx.MessageDialog(None, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
             dia.ShowModal()
             dia.Destroy()
 

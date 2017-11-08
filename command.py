@@ -14,7 +14,7 @@ ALT {step} {direction} {speed} {distance} {interval} {count}
 
 from decimal import Decimal, ROUND_HALF_UP, ROUND_UP, ROUND_DOWN
 
-class command_converter:
+class command:
     BACK_DIRECTION = "0"
     BACK_INTERVAL = "5"
     BACK_STEP_COUNT = "00"
@@ -517,6 +517,53 @@ In "%s", the count "%s" is wrong.'''
             error = '''Convert error!
 Unknown command.'''
             raise Exception(error)
+
+
+    ############################################################################
+    # Parse convert
+    ############################################################################
+    def parse_convert(self, string):
+        if (string == ""):
+            raise Exception("Command list is empty!")
+
+        else:
+            pass
+
+        string_list = string.splitlines()
+
+        line_number = 1
+        used_time = 0
+        code_list = []
+        for string in string_list:
+            if ((string == "") or (string[0] == ";")):
+                line_number = line_number + 1
+                continue
+            else:
+                pass
+
+            command = string.split()
+
+            try:
+                hex_code = self.convert(command)
+            except Exception as e:
+                raise Exception("Command Error in line: " + str(line_number) + "\n" + e.message)
+
+            if (command[0] == "VD"):
+                one_command_time = (Decimal(command[4]) / Decimal(command[3]) * 1000).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+            elif (command[0] == "DELAY"):
+                one_command_time = Decimal(command[1]).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+            elif (command[0] == "ALT"):
+                one_command_time = ((Decimal(command[4]) / Decimal(command[3]) * 1000 + Decimal(command[5])) * Decimal(command[6])).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+            else:
+                pass
+
+            used_time += one_command_time
+
+            code = [command, hex_code, one_command_time, used_time]
+            code_list.append(code)
+            line_number = line_number + 1
+
+        return code_list
 
 
     ############################################################################
