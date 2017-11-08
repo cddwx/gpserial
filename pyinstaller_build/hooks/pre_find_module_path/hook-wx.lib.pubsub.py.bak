@@ -1,0 +1,5 @@
+def pre_find_module_path(pfmp_api):
+    print "{"
+    print pfmp_api.module_name
+    print pfmp_api.search_dirs
+    print "}"

@@ -1,0 +1,5 @@
+pre_safe_import_module( psim_api )
+    print "{"
+    print pfmp_api.module_name
+    print pfmp_api.search_dirs
+    print "}"

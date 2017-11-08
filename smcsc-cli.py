@@ -3,7 +3,7 @@
 
 import sys
 
-from core.command_converter import command_converter
+from command_converter import command_converter
 
 converter = command_converter()
 

@@ -12,7 +12,7 @@ from command_converter import command_converter
 from run_thread import run_thread
 from serial_read_thread import serial_read_thread
 
-class main_window(wx.Frame):
+class main_frame(wx.Frame):
     ############################################################################
     # Init
     ############################################################################
@@ -49,149 +49,129 @@ class main_window(wx.Frame):
         self.panel = wx.Panel(self)
 
         #
-        # Recieve objects.
+        # Recieve.
         #
-        self.m_recieve_title = wx.StaticText(self.panel, label=u"Recieve area")
-        self.m_recieve_area = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
-        self.m_recieve_clear_button = wx.Button(self.panel, label=u"Clear")
+        self.recieve_textarea = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
+        self.recieve_clear_button = wx.Button(self.panel, label=u"Clear")
 
         #
-        # Send objects.
+        # Send
         #
-        self.m_action_title = wx.StaticText(self.panel, label=u"List command/code")
 
-        self.m_action_list = wx.ListCtrl(self.panel, style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES | wx.LC_SINGLE_SEL)
-        self.m_action_list.InsertColumn(0, u"Id", format=wx.LIST_FORMAT_LEFT)
-        self.m_action_list.InsertColumn(1, u"Command", format=wx.LIST_FORMAT_LEFT)
-        self.m_action_list.InsertColumn(2, u"Hex code", format=wx.LIST_FORMAT_LEFT)
+        self.action_list = wx.ListCtrl(self.panel, style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES | wx.LC_SINGLE_SEL)
+        self.action_list.InsertColumn(0, u"Id", format=wx.LIST_FORMAT_LEFT)
+        self.action_list.InsertColumn(1, u"Command", format=wx.LIST_FORMAT_LEFT)
+        self.action_list.InsertColumn(2, u"Hex code", format=wx.LIST_FORMAT_LEFT)
 
-        self.m_action_send_button = wx.Button(self.panel, label=u"Send")
-        self.m_action_send_next_button = wx.Button(self.panel, label=u"Send next")
+        self.action_send_button = wx.Button(self.panel, label=u"Send")
+        self.action_send_next_button = wx.Button(self.panel, label=u"Send next")
 
 
         #
-        # Serial parameter setting.
+        # Serial
         #
-        self.m_serial_title = wx.StaticText(self.panel, label=u"Serial port setting")
+        self.serial_port_title = wx.StaticText(self.panel, label=u"Port: ")
 
-        self.m_serial_com_title = wx.StaticText(self.panel, label=u"Port: ")
+        port_choice = self.get_port_choice()
+        self.serial_port_choice = wx.Choice(self.panel, choices=port_choice)
+        self.serial_port_choice.SetSelection(0)
 
-        m_com_choices = self.get_m_com_choices()
-        self.m_serial_com_select = wx.ComboBox(self.panel, choices=m_com_choices, style=wx.CB_READONLY)
-        self.m_serial_com_select.SetSelection(0)
+        self.serial_bitrate_title = wx.StaticText(self.panel, label=u"Bitrate: ")
 
-        self.m_serial_bitrate_title = wx.StaticText(self.panel, label=u"Bitrate: ")
-
-        m_bitrate_choices = [ u"2400", u"4800", u"9600", u"14400", u"19200", u"28800", u"57600" ]
-        self.m_serial_bitrate_select = wx.ComboBox(self.panel, choices=m_bitrate_choices, style=wx.CB_READONLY)
-        self.m_serial_bitrate_select.SetValue(u"9600")
+        bitrate_choice = [ u"2400", u"4800", u"9600", u"14400", u"19200", u"28800", u"57600" ]
+        self.serial_bitrate_choice = wx.Choice(self.panel, choices=bitrate_choice)
+        self.serial_bitrate_choice.SetStringSelection(u"9600")
 
 
-        self.m_serial_databit_title = wx.StaticText(self.panel, label=u"Databit: ")
+        self.serial_databit_title = wx.StaticText(self.panel, label=u"Databit: ")
 
-        m_databit_choices = [ u"5", u"6", u"7", u"8" ]
-        self.m_serial_databit_select = wx.ComboBox(self.panel, choices=m_databit_choices, style=wx.CB_READONLY)
-        self.m_serial_databit_select.SetValue(u"8")
+        databit_choice = [ u"5", u"6", u"7", u"8" ]
+        self.serial_databit_choice = wx.Choice(self.panel, choices=databit_choice)
+        self.serial_databit_choice.SetStringSelection(u"8")
 
-        self.m_serial_checkbit_title = wx.StaticText(self.panel, label=u"Checkbit: ")
+        self.serial_checkbit_title = wx.StaticText(self.panel, label=u"Checkbit: ")
 
-        m_checkbit_choices = [ u"None", u"Odd", u"Even", u"One", u"Zero" ]
-        self.m_serial_checkbit_select = wx.ComboBox(self.panel, choices=m_checkbit_choices, style=wx.CB_READONLY)
-        self.m_serial_checkbit_select.SetValue(u"None")
+        checkbit_choice = [ u"None", u"Odd", u"Even", u"One", u"Zero" ]
+        self.serial_checkbit_choice = wx.Choice(self.panel, choices=checkbit_choice)
+        self.serial_checkbit_choice.SetStringSelection(u"None")
 
 
-        self.m_serial_stopbit_title = wx.StaticText(self.panel, label=u"Stopbit: ")
+        self.serial_stopbit_title = wx.StaticText(self.panel, label=u"Stopbit: ")
 
-        m_stopbit_choices = [ u"1", u"2" ]
-        self.m_serial_stopbit_select = wx.ComboBox(self.panel, choices=m_stopbit_choices, style=wx.CB_READONLY)
-        self.m_serial_stopbit_select.SetValue(u"1")
+        stopbit_choice = [ u"1", u"2" ]
+        self.serial_stopbit_choice = wx.Choice(self.panel, choices=stopbit_choice)
+        self.serial_stopbit_choice.SetStringSelection(u"1")
 
-        self.m_serial_check_button = wx.Button(self.panel, label=u"Check port")
+        self.serial_refresh_button = wx.Button(self.panel, label=u"Refresh port")
 
-        self.m_serial_open_button = wx.Button(self.panel, label=u"Open port")
-        self.m_serial_open_button.Enable(True)
+        self.serial_open_button = wx.Button(self.panel, label=u"Open port")
+        self.serial_open_button.Enable()
 
-        self.m_serial_close_button = wx.Button(self.panel, label=u"Close port")
-        self.m_serial_close_button.Enable(False)
+        self.serial_close_button = wx.Button(self.panel, label=u"Close port")
+        self.serial_close_button.Disable()
 
-        # Program operation.
-        self.m_program_exit_button = wx.Button(self.panel, label=u"Exit")
+        self.program_exit_button = wx.Button(self.panel, label=u"Exit")
 
 
         #
-        # Write area.
+        # Seq.
         #
-        self.m_write_title = wx.StaticText(self.panel, label=u"Command seq")
-        self.m_write_area = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE)
-        self.m_write_convert_button     = wx.Button(self.panel, label=u"Check seq")
-        self.m_write_run_seq_button     = wx.Button(self.panel, label=u"Run seq")
-        self.m_write_run_seq_button.Enable(False)
-        self.m_write_stop_seq_button     = wx.Button(self.panel, label=u"Stop after here")
-        self.m_write_stop_seq_button.Enable(False)
+        self.seq_textarea = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE)
+        self.seq_convert_button = wx.Button(self.panel, label=u"Check seq")
 
-        self.m_write_reset_button     = wx.Button(self.panel, label=u"*** MCU RESET ***")
-        self.m_write_command_reset_button       = wx.Button(self.panel, label=u"Command reset")
-        self.m_write_run_button         = wx.Button(self.panel, label=u"= Run code =")
-        self.m_write_show_ram_button    = wx.Button(self.panel, label=u"Show RAM code")
-        self.m_write_show_eeprom_button = wx.Button(self.panel, label=u"Show EEPROM code")
-        self.m_write_write_button       = wx.Button(self.panel, label=u"Write to EEPROM")
-        self.m_write_read_button        = wx.Button(self.panel, label=u"Load from EEPROM")
+        self.seq_run_button = wx.Button(self.panel, label=u"Run seq")
+        self.seq_run_button.Disable()
 
-        self.m_send_title = wx.StaticText(self.panel, label=u"Single command/code")
-        self.m_send_input = wx.TextCtrl(self.panel, value=u"")
-        self.m_send_button = wx.Button(self.panel, label=u"Send command")
-        self.m_send_hex_button = wx.Button(self.panel, label=u"Send code")
+        self.seq_stop_button = wx.Button(self.panel, label=u"Stop after here")
+        self.seq_stop_button.Disable()
 
+        #
+        # Control
+        #
+        self.mcu_reset_button = wx.Button(self.panel, label=u"*** MCU RESET ***")
+        self.send_reset_button = wx.Button(self.panel, label=u"Command reset")
+        self.single_run_button = wx.Button(self.panel, label=u"= Run code =")
+        self.show_ram_button = wx.Button(self.panel, label=u"Show RAM code")
+        self.show_eeprom_button = wx.Button(self.panel, label=u"Show EEPROM code")
+        self.write_eeprom_button = wx.Button(self.panel, label=u"Write to EEPROM")
+        self.read_eeprom_button = wx.Button(self.panel, label=u"Load from EEPROM")
 
-        '''
-        self.m_back_code_setting_title = wx.StaticText(self.panel, label=u"Back code setting")
-
-        self.m_direction_title = wx.StaticText(self.panel, label=u"Back direction")
-        self.m_direction_input = wx.TextCtrl(self.panel, value=self.converter.BACK_DIRECTION)
-
-        self.m_interval_title = wx.StaticText(self.panel, label=u"Back interval")
-        self.m_interval_input = wx.TextCtrl(self.panel, value=self.converter.BACK_INTERVAL)
-
-        self.m_step_count_title = wx.StaticText(self.panel, label=u"Back step count")
-        self.m_step_count_input = wx.TextCtrl(self.panel, value=self.converter.BACK_STEP_COUNT)
-
-        self.m_pause_time_high_title = wx.StaticText(self.panel, label=u"Back pause time high")
-        self.m_pause_time_high_input = wx.TextCtrl(self.panel, value=self.converter.BACK_PAUSE_TIME_HIGH)
-
-        self.m_pause_time_low_title = wx.StaticText(self.panel, label=u"Back pause time low")
-        self.m_pause_time_low_input = wx.TextCtrl(self.panel, value=self.converter.BACK_PAUSE_TIME_LOW)
-        '''
-
+        #
+        # Single send
+        #
+        self.single_input = wx.TextCtrl(self.panel, value=u"")
+        self.single_send_button = wx.Button(self.panel, label=u"Send command")
+        self.single_send_hex_button = wx.Button(self.panel, label=u"Send code")
 
 
     ############################################################################
     # Connect Events
     ############################################################################
     def connect_events(self):
-        self.m_recieve_clear_button.Bind(wx.EVT_BUTTON, self.on_recieve_clear_button_clicked)
+        self.recieve_clear_button.Bind(wx.EVT_BUTTON, self.on_recieve_clear_button_clicked)
 
-        self.m_serial_check_button.Bind(wx.EVT_BUTTON, self.on_serial_check_button_clicked)
-        self.m_serial_open_button.Bind(wx.EVT_BUTTON, self.on_serial_open_button_clicked)
-        self.m_serial_close_button.Bind(wx.EVT_BUTTON, self.on_serial_close_button_clicked)
-        self.m_program_exit_button.Bind(wx.EVT_BUTTON, self.on_program_exit_button_clicked)
+        self.serial_refresh_button.Bind(wx.EVT_BUTTON, self.on_serial_check_button_clicked)
+        self.serial_open_button.Bind(wx.EVT_BUTTON, self.on_serial_open_button_clicked)
+        self.serial_close_button.Bind(wx.EVT_BUTTON, self.on_serial_close_button_clicked)
+        self.program_exit_button.Bind(wx.EVT_BUTTON, self.on_program_exit_button_clicked)
 
-        self.m_action_send_button.Bind(wx.EVT_BUTTON, self.on_action_send_button_clicked)
-        self.m_action_send_next_button.Bind(wx.EVT_BUTTON, self.on_action_send_next_button_clicked)
+        self.action_send_button.Bind(wx.EVT_BUTTON, self.on_action_send_button_clicked)
+        self.action_send_next_button.Bind(wx.EVT_BUTTON, self.on_action_send_next_button_clicked)
 
-        self.m_write_convert_button.Bind(wx.EVT_BUTTON, self.on_write_convert_button_clicked)
-        self.m_write_run_seq_button.Bind(wx.EVT_BUTTON, self.on_write_run_seq_button_clicked)
-        self.m_write_stop_seq_button.Bind(wx.EVT_BUTTON, self.on_write_stop_seq_button_clicked)
-        self.m_write_reset_button.Bind(wx.EVT_BUTTON, self.on_write_reset_button_clicked)
-        self.m_write_command_reset_button.Bind(wx.EVT_BUTTON, self.on_write_command_reset_button_clicked)
-        self.m_write_run_button.Bind(wx.EVT_BUTTON, self.on_write_run_button_clicked)
-        self.m_write_show_ram_button.Bind(wx.EVT_BUTTON, self.on_write_show_ram_button_clicked)
-        self.m_write_show_eeprom_button.Bind(wx.EVT_BUTTON, self.on_write_show_eeprom_button_clicked)
-        self.m_write_write_button.Bind(wx.EVT_BUTTON, self.on_write_write_button_clicked)
-        self.m_write_read_button.Bind(wx.EVT_BUTTON, self.on_write_read_button_clicked)
+        self.seq_convert_button.Bind(wx.EVT_BUTTON, self.on_write_convert_button_clicked)
+        self.seq_run_button.Bind(wx.EVT_BUTTON, self.on_write_run_seq_button_clicked)
+        self.seq_stop_button.Bind(wx.EVT_BUTTON, self.on_write_stop_seq_button_clicked)
 
-        self.m_send_button.Bind(wx.EVT_BUTTON, self.on_send_button_clicked)
-        self.m_send_hex_button.Bind(wx.EVT_BUTTON, self.on_send_hex_button_clicked)
+        self.single_send_button.Bind(wx.EVT_BUTTON, self.on_send_button_clicked)
+        self.single_send_hex_button.Bind(wx.EVT_BUTTON, self.on_send_hex_button_clicked)
 
+        self.mcu_reset_button.Bind(wx.EVT_BUTTON, self.on_write_reset_button_clicked)
+        self.send_reset_button.Bind(wx.EVT_BUTTON, self.on_write_command_reset_button_clicked)
+        self.single_run_button.Bind(wx.EVT_BUTTON, self.on_write_run_button_clicked)
+        self.show_ram_button.Bind(wx.EVT_BUTTON, self.on_write_show_ram_button_clicked)
+        self.show_eeprom_button.Bind(wx.EVT_BUTTON, self.on_write_show_eeprom_button_clicked)
+        self.write_eeprom_button.Bind(wx.EVT_BUTTON, self.on_write_write_button_clicked)
+        self.read_eeprom_button.Bind(wx.EVT_BUTTON, self.on_write_read_button_clicked)
 
 
     ############################################################################
@@ -199,201 +179,226 @@ class main_window(wx.Frame):
     # I find it is more confortable to arrange from big to small.
     ############################################################################
     def arrange_objects(self):
-        # setting_area-content-parameter-port
-        setting_area_parameter_port_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_parameter_port_box.Add(self.m_serial_com_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        setting_area_parameter_port_box.Add(self.m_serial_com_select, 1, wx.ALIGN_CENTER_VERTICAL)
+        #
+        ##### Serial port box
+        #
+        serial_port_box = wx.BoxSizer(wx.HORIZONTAL)
+        serial_port_box.Add(self.serial_port_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        serial_port_box.Add(self.serial_port_choice, 1, wx.ALIGN_CENTER_VERTICAL)
 
-        # setting_area-content-parameter-bitrate
-        setting_area_parameter_bitrate_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_parameter_bitrate_box.Add(self.m_serial_bitrate_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        setting_area_parameter_bitrate_box.Add(self.m_serial_bitrate_select, 1, wx.ALIGN_CENTER_VERTICAL)
+        #
+        ##### Serial bitrate box
+        #
+        serial_bitrate_box = wx.BoxSizer(wx.HORIZONTAL)
+        serial_bitrate_box.Add(self.serial_bitrate_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        serial_bitrate_box.Add(self.serial_bitrate_choice, 1, wx.ALIGN_CENTER_VERTICAL)
 
-        # setting_area-content-parameter-databit
-        setting_area_parameter_databit_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_parameter_databit_box.Add(self.m_serial_databit_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        setting_area_parameter_databit_box.Add(self.m_serial_databit_select, 1, wx.ALIGN_CENTER_VERTICAL)
+        #
+        ##### Serial databit box
+        #
+        serial_databit_box = wx.BoxSizer(wx.HORIZONTAL)
+        serial_databit_box.Add(self.serial_databit_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        serial_databit_box.Add(self.serial_databit_choice, 1, wx.ALIGN_CENTER_VERTICAL)
 
-        # setting_area-content-parameter-checkbit
-        setting_area_parameter_checkbit_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_parameter_checkbit_box.Add(self.m_serial_checkbit_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        setting_area_parameter_checkbit_box.Add(self.m_serial_checkbit_select, 1, wx.ALIGN_CENTER_VERTICAL)
+        #
+        ##### Serial checkbit box
+        #
+        serial_checkbit_box = wx.BoxSizer(wx.HORIZONTAL)
+        serial_checkbit_box.Add(self.serial_checkbit_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        serial_checkbit_box.Add(self.serial_checkbit_choice, 1, wx.ALIGN_CENTER_VERTICAL)
 
-        # setting_area-content-parameter-stopbit
-        setting_area_parameter_stopbit_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_parameter_stopbit_box.Add(self.m_serial_stopbit_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        setting_area_parameter_stopbit_box.Add(self.m_serial_stopbit_select, 1, wx.ALIGN_CENTER_VERTICAL)
+        #
+        ##### Serial stopbit box
+        #
+        serial_stopbit_box = wx.BoxSizer(wx.HORIZONTAL)
+        serial_stopbit_box.Add(self.serial_stopbit_title, 1, wx.ALIGN_CENTER_VERTICAL)
+        serial_stopbit_box.Add(self.serial_stopbit_choice, 1, wx.ALIGN_CENTER_VERTICAL)
 
-        # setting_area-content-parameter
-        setting_area_parameter_box = wx.BoxSizer(wx.VERTICAL)
-        setting_area_parameter_box.Add(setting_area_parameter_port_box, 1, wx.EXPAND)
-        setting_area_parameter_box.Add(setting_area_parameter_bitrate_box, 1, wx.EXPAND)
-        setting_area_parameter_box.Add(setting_area_parameter_databit_box, 1, wx.EXPAND)
-        setting_area_parameter_box.Add(setting_area_parameter_checkbit_box, 1, wx.EXPAND)
-        setting_area_parameter_box.Add(setting_area_parameter_stopbit_box, 1, wx.EXPAND)
+        #
+        #### Parameter box
+        #
+        parameter_box = wx.BoxSizer(wx.VERTICAL)
+        parameter_box.Add(serial_port_box, 1, wx.EXPAND)
+        parameter_box.Add(serial_bitrate_box, 1, wx.EXPAND)
+        parameter_box.Add(serial_databit_box, 1, wx.EXPAND)
+        parameter_box.Add(serial_checkbit_box, 1, wx.EXPAND)
+        parameter_box.Add(serial_stopbit_box, 1, wx.EXPAND)
 
 
-        # setting_area-content-operate-check
-        setting_area_operate_check_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_operate_check_box.Add(self.m_serial_check_button, 0, wx.ALIGN_CENTER_VERTICAL)
-
-        # setting_area-content-operate-open
-        setting_area_operate_open_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_operate_open_box.Add(self.m_serial_open_button, 0, wx.ALIGN_CENTER_VERTICAL)
-
-        # setting_area-content-operate-close
-        setting_area_operate_close_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_operate_close_box.Add(self.m_serial_close_button, 0, wx.ALIGN_CENTER_VERTICAL)
-
-        # setting_area-content-operate-exit
-        setting_area_operate_exit_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_operate_exit_box.Add(self.m_program_exit_button, 0, wx.ALIGN_CENTER_VERTICAL)
+        #
+        ##### Serial refresh button box
+        #
+        serial_refresh_button_box = wx.BoxSizer(wx.HORIZONTAL)
+        serial_refresh_button_box.Add(self.serial_refresh_button, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
         
-        # setting_area-content-operate
-        setting_area_operate_box = wx.BoxSizer(wx.VERTICAL)
-        setting_area_operate_box.Add(setting_area_operate_check_box, 1, wx.ALIGN_CENTER | wx.ALL, 5)
-        setting_area_operate_box.Add(setting_area_operate_open_box, 1, wx.ALIGN_CENTER | wx.ALL, 5)
-        setting_area_operate_box.Add(setting_area_operate_close_box, 1, wx.ALIGN_CENTER | wx.ALL, 5)
-        setting_area_operate_box.Add(setting_area_operate_exit_box, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        #
+        ##### Serial open button box
+        #
+        serial_open_button_box = wx.BoxSizer(wx.HORIZONTAL)
+        serial_open_button_box.Add(self.serial_open_button, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        
+        #
+        ##### Serial close button box
+        #
+        serial_close_button_box = wx.BoxSizer(wx.HORIZONTAL)
+        serial_close_button_box.Add(self.serial_close_button, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        
+        #
+        #
+        ##### Program exit button box
+        #
+        program_exit_button_box = wx.BoxSizer(wx.HORIZONTAL)
+        program_exit_button_box.Add(self.program_exit_button, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        
+        #
+        #### Operate box
+        #
+        operate_box = wx.BoxSizer(wx.VERTICAL)
+        operate_box.Add(serial_refresh_button_box, 1, wx.EXPAND)
+        operate_box.Add(serial_open_button_box, 1, wx.EXPAND)
+        operate_box.Add(serial_close_button_box, 1, wx.EXPAND)
+        operate_box.Add(program_exit_button_box, 1, wx.EXPAND)
 
-        # setting_area-content
-        setting_area_content_box = wx.BoxSizer(wx.HORIZONTAL)
-        setting_area_content_box.Add(setting_area_parameter_box, 2, wx.EXPAND)
-        setting_area_content_box.Add(setting_area_operate_box, 1, wx.EXPAND)
+        #
+        ### Setting box
+        #
+        setting_box = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, u"Setting area")
+        setting_box.Add(parameter_box, 2, wx.EXPAND | wx.ALL, 5)
+        setting_box.Add(operate_box, 1, wx.EXPAND | wx.ALL, 5)
 
-        # setting_area
-        setting_area_box = wx.BoxSizer(wx.VERTICAL)
-        setting_area_box.Add(self.m_serial_title, 0)
-        setting_area_box.Add(setting_area_content_box, 1, wx.EXPAND)
+        #
+        #### Seq textarea box
+        #
+        seq_textarea_box = wx.BoxSizer(wx.HORIZONTAL)
+        seq_textarea_box.Add(self.seq_textarea, 1, wx.EXPAND | wx.ALL, 5)
 
+        #
+        #### Seq send buttons box
+        #
+        seq_send_buttons_box = wx.BoxSizer(wx.HORIZONTAL)
+        seq_send_buttons_box.Add(self.seq_convert_button, 1, wx.ALL, 5)
+        seq_send_buttons_box.Add(self.seq_run_button, 1, wx.ALL, 5)
+        seq_send_buttons_box.Add(self.seq_stop_button, 1, wx.ALL, 5)
 
-        '''
-        # write_area-setting-direction
-        write_area_setting_direction_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_setting_direction_box.Add(self.m_direction_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        write_area_setting_direction_box.Add(self.m_direction_input, 1, wx.ALIGN_CENTER_VERTICAL)
+        #
+        ### Seq send box
+        #
+        seq_send_box = wx.StaticBoxSizer(wx.VERTICAL, self.panel, u"Seq send area")
+        seq_send_box.Add(seq_textarea_box, 1, wx.EXPAND)
+        seq_send_box.Add(seq_send_buttons_box, 0, wx.EXPAND)
 
-        # write_area-setting-interval
-        write_area_setting_interval_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_setting_interval_box.Add(self.m_interval_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        write_area_setting_interval_box.Add(self.m_interval_input, 1, wx.ALIGN_CENTER_VERTICAL)
+        #
+        #### Single send buttons box
+        #
+        single_input_box = wx.BoxSizer(wx.HORIZONTAL)
+        single_input_box.Add(self.single_input, 1, wx.ALL, 5)
 
-        # write_area-setting-step_count
-        write_area_setting_step_count_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_setting_step_count_box.Add(self.m_step_count_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        write_area_setting_step_count_box.Add(self.m_step_count_input, 1, wx.ALIGN_CENTER_VERTICAL)
+        #
+        #### Single send buttons box
+        #
+        single_send_buttons_box = wx.BoxSizer(wx.HORIZONTAL)
+        single_send_buttons_box.Add(self.single_send_button, 1, wx.ALL, 5)
+        single_send_buttons_box.Add(self.single_send_hex_button, 1, wx.ALL, 5)
 
-        # write_area-setting-pause_time_high
-        write_area_setting_pause_time_high_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_setting_pause_time_high_box.Add(self.m_pause_time_high_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        write_area_setting_pause_time_high_box.Add(self.m_pause_time_high_input, 1, wx.ALIGN_CENTER_VERTICAL)
+        #
+        ### Single send box
+        #
+        single_send_box = wx.StaticBoxSizer(wx.VERTICAL, self.panel, u"Single send area")
+        single_send_box.Add(single_input_box, 0, wx.EXPAND)
+        single_send_box.Add(single_send_buttons_box, 0, wx.EXPAND)
 
-        # write_area-setting-pause_time_low
-        write_area_setting_pause_time_low_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_setting_pause_time_low_box.Add(self.m_pause_time_low_title, 1, wx.ALIGN_CENTER_VERTICAL)
-        write_area_setting_pause_time_low_box.Add(self.m_pause_time_low_input, 1, wx.ALIGN_CENTER_VERTICAL)
+        #
+        ##### Control buttons1 box
+        #
+        control_buttons1_box = wx.BoxSizer(wx.HORIZONTAL)
+        control_buttons1_box.Add(self.mcu_reset_button, 1, wx.ALL, 5)
 
-        # write_area-setting
-        write_area_setting_box = wx.BoxSizer(wx.VERTICAL)
-        write_area_setting_box.Add(self.m_back_code_setting_title, 0)
-        write_area_setting_box.Add(write_area_setting_direction_box, 0, wx.EXPAND)
-        write_area_setting_box.Add(write_area_setting_interval_box, 0, wx.EXPAND)
-        write_area_setting_box.Add(write_area_setting_step_count_box, 0, wx.EXPAND)
-        write_area_setting_box.Add(write_area_setting_pause_time_high_box, 0, wx.EXPAND)
-        write_area_setting_box.Add(write_area_setting_pause_time_low_box, 0, wx.EXPAND)
-        '''
+        #
+        ##### Control buttons2 box
+        #
+        control_buttons2_box = wx.BoxSizer(wx.HORIZONTAL)
+        control_buttons2_box.Add(self.send_reset_button, 1, wx.ALL, 5)
+        control_buttons2_box.Add(self.single_run_button, 1, wx.ALL, 5)
 
+        #
+        ##### Control buttons3 box
+        #
+        control_buttons3_box = wx.BoxSizer(wx.HORIZONTAL)
+        control_buttons3_box.Add(self.show_ram_button, 1, wx.ALL, 5)
+        control_buttons3_box.Add(self.show_eeprom_button, 1, wx.ALL, 5)
 
-        # write_area-seq_buttons
-        write_area_seq_buttons_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_seq_buttons_box.Add(self.m_write_convert_button, 1, wx.ALL, 5)
-        write_area_seq_buttons_box.Add(self.m_write_run_seq_button, 1, wx.ALL, 5)
-        write_area_seq_buttons_box.Add(self.m_write_stop_seq_button, 1, wx.ALL, 5)
+        #
+        ##### Control buttons4 box
+        #
+        control_buttons4_box = wx.BoxSizer(wx.HORIZONTAL)
+        control_buttons4_box.Add(self.write_eeprom_button, 1, wx.ALL, 5)
+        control_buttons4_box.Add(self.read_eeprom_button, 1, wx.ALL, 5)
 
-
-        # write_area-buttons2
-        write_area_buttons2_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_buttons2_box.Add(self.m_write_command_reset_button, 1, wx.ALL, 5)
-        write_area_buttons2_box.Add(self.m_write_run_button, 1, wx.ALL, 5)
-
-        # write_area-buttons3
-        write_area_buttons3_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_buttons3_box.Add(self.m_write_show_ram_button, 1, wx.ALL, 5)
-        write_area_buttons3_box.Add(self.m_write_show_eeprom_button, 1, wx.ALL, 5)
-
-        # write_area-buttons4
-        write_area_buttons4_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_buttons4_box.Add(self.m_write_write_button, 1, wx.ALL, 5)
-        write_area_buttons4_box.Add(self.m_write_read_button, 1, wx.ALL, 5)
-
-        # write_area-send_buttons
-        write_area_send_buttons_box = wx.BoxSizer(wx.HORIZONTAL)
-        write_area_send_buttons_box.Add(self.m_send_button, 1, wx.ALL, 5)
-        write_area_send_buttons_box.Add(self.m_send_hex_button, 1, wx.ALL, 5)
-
-
-        # write_area-write
-        write_area_write_box = wx.BoxSizer(wx.VERTICAL)
-        write_area_write_box.Add(self.m_write_title, 0, wx.TOP, 10)
-        write_area_write_box.Add(self.m_write_area, 1, wx.EXPAND)
-        write_area_write_box.Add(write_area_seq_buttons_box, 0, wx.EXPAND)
-        write_area_write_box.Add(self.m_write_reset_button, 0, wx.EXPAND | wx.ALL, 5)
-        write_area_write_box.Add(write_area_buttons2_box, 0, wx.EXPAND)
-        write_area_write_box.Add(write_area_buttons3_box, 0, wx.EXPAND)
-        write_area_write_box.Add(write_area_buttons4_box, 0, wx.EXPAND)
-        write_area_write_box.Add(self.m_send_title, 0, wx.TOP, 10)
-        write_area_write_box.Add(self.m_send_input, 0, wx.EXPAND)
-        write_area_write_box.Add(write_area_send_buttons_box, 0, wx.EXPAND)
-
-        # write_area
-        write_area_box = wx.BoxSizer(wx.VERTICAL)
-        #write_area_box.Add(write_area_setting_box, 0, wx.EXPAND)
-        write_area_box.Add(write_area_write_box, 1, wx.EXPAND)
-
-
-        # recieve_area
-        recieve_area_box = wx.BoxSizer(wx.VERTICAL)
-        recieve_area_box.Add(self.m_recieve_title, 0)
-        recieve_area_box.Add(self.m_recieve_area, 1, wx.EXPAND)
-        recieve_area_box.Add(self.m_recieve_clear_button, 0, wx.ALL, 5)
-
-
-        # send_area-operate
-        send_area_operate_box = wx.BoxSizer(wx.HORIZONTAL)
-        send_area_operate_box.Add(self.m_action_send_button, 1, wx.ALL, 5)
-        send_area_operate_box.Add(self.m_action_send_next_button, 1, wx.ALL, 5)
-
-        # send_area
-        send_area_box = wx.BoxSizer(wx.VERTICAL)
-        send_area_box.Add(self.m_action_title, 0)
-        send_area_box.Add(self.m_action_list, 1, wx.EXPAND)
-        send_area_box.Add(send_area_operate_box, 0, wx.EXPAND)
+        #
+        ### Control box
+        #
+        control_box = wx.StaticBoxSizer(wx.VERTICAL, self.panel, u"Control area")
+        control_box.Add(control_buttons1_box, 0, wx.EXPAND)
+        control_box.Add(control_buttons2_box, 0, wx.EXPAND)
+        control_box.Add(control_buttons3_box, 0, wx.EXPAND)
+        control_box.Add(control_buttons4_box, 0, wx.EXPAND)
 
 
-        # left
+        #
+        ### Recieve box
+        #
+        recieve_box = wx.StaticBoxSizer(wx.VERTICAL, self.panel, u"Recieve area")
+        recieve_box.Add(self.recieve_textarea, 1, wx.EXPAND | wx.ALL, 5)
+        recieve_box.Add(self.recieve_clear_button, 0, wx.ALL, 5)
+
+        #
+        #### Action list box
+        #
+        action_list_box = wx.BoxSizer(wx.HORIZONTAL)
+        action_list_box.Add(self.action_list, 1, wx.EXPAND | wx.ALL, 5)
+
+        #
+        #### Action send buttons box
+        #
+        action_send_buttons_box = wx.BoxSizer(wx.HORIZONTAL)
+        action_send_buttons_box.Add(self.action_send_button, 1, wx.ALL, 5)
+        action_send_buttons_box.Add(self.action_send_next_button, 1, wx.ALL, 5)
+
+        #
+        ### Action send box
+        #
+        action_send_box = wx.StaticBoxSizer(wx.VERTICAL, self.panel, u"List send area")
+        action_send_box.Add(action_list_box, 1, wx.EXPAND)
+        action_send_box.Add(action_send_buttons_box, 0, wx.EXPAND)
+
+
+        #
+        ## Left
+        #
         left_box = wx.BoxSizer(wx.VERTICAL)
-        left_box.Add(setting_area_box, 2, wx.EXPAND | wx.ALL, 5)
-        left_box.Add(write_area_box, 5, wx.EXPAND | wx.ALL, 5)
+        left_box.Add(setting_box, 0, wx.EXPAND | wx.ALL, 5)
+        left_box.Add(seq_send_box, 2, wx.EXPAND | wx.ALL, 5)
+        left_box.Add(single_send_box, 1, wx.EXPAND | wx.ALL, 5)
+        left_box.Add(control_box, 0, wx.EXPAND | wx.ALL, 5)
 
-        # right
+        #
+        ## Right
+        #
         right_box = wx.BoxSizer(wx.VERTICAL)
-        right_box.Add(recieve_area_box, 1, wx.EXPAND | wx.ALL, 5)
-        right_box.Add(send_area_box, 1, wx.EXPAND | wx.ALL, 5)
+        right_box.Add(recieve_box, 1, wx.EXPAND | wx.ALL, 5)
+        right_box.Add(action_send_box, 1, wx.EXPAND | wx.ALL, 5)
 
-        # main
+        #
+        # Main box
+        #
         main_box = wx.BoxSizer(wx.HORIZONTAL)
-        main_box.Add(left_box, 2, wx.EXPAND | wx.ALL, 5)
-        main_box.Add(right_box, 3, wx.EXPAND | wx.ALL, 5)
+        main_box.Add(left_box, 1, wx.EXPAND)
+        main_box.Add(right_box, 2, wx.EXPAND)
 
         self.panel.SetSizer(main_box)
-        self.panel.Layout()
         self.panel.Fit()
-        #self.panel.Centre()
 
-        #self.SetSizer(main_box)
-        self.Layout()
         self.Fit()
-        #self.Centre()
 
 
     #
@@ -403,16 +408,16 @@ class main_window(wx.Frame):
     ###########################################################################
     # Get com ports.
     ###########################################################################
-    def get_m_com_choices(self):
-        m_com_choices = []
+    def get_port_choice(self):
+        port_choice = []
         port_list = list(comports())
         if len(port_list) > 0:
             for port in port_list:
-                m_com_choices.append(port[0])
+                port_choice.append(port[0])
         else:
-            m_com_choices = []
+            port_choice = []
 
-        return m_com_choices
+        return port_choice
 
 
     ###########################################################################
@@ -536,15 +541,15 @@ class main_window(wx.Frame):
     # Recieve area clear.
     ###########################################################################
     def on_recieve_clear_button_clicked(self, event):
-        self.m_recieve_area.Clear()
+        self.recieve_textarea.Clear()
 
 
     ###########################################################################
     # Check com ports.
     ###########################################################################
     def on_serial_check_button_clicked(self, event):
-        self.m_serial_com_select.Set(self.get_m_com_choices())
-        self.m_serial_com_select.SetSelection(0)
+        self.serial_port_choice.Set(self.get_port_choice())
+        self.serial_port_choice.SetSelection(0)
 
 
     ###########################################################################
@@ -552,7 +557,7 @@ class main_window(wx.Frame):
     ###########################################################################
     def on_recieve_area_update(self, data):
         #print "data[", data, "]"
-        self.m_recieve_area.AppendText(data)
+        self.recieve_textarea.AppendText(data)
 
 
     ###########################################################################
@@ -571,11 +576,11 @@ class main_window(wx.Frame):
         try:
             self.serial_port.timeout = 1
             self.serial_port.xonxoff = 0
-            self.serial_port.port = self.m_serial_com_select.GetValue()
-            self.serial_port.parity = self.m_serial_checkbit_select.GetValue()[0]
-            self.serial_port.baudrate = int(self.m_serial_bitrate_select.GetValue())
-            self.serial_port.bytesize = int(self.m_serial_databit_select.GetValue())
-            self.serial_port.stopbits = int(self.m_serial_stopbit_select.GetValue())
+            self.serial_port.port = self.serial_port_choice.GetValue()
+            self.serial_port.parity = self.serial_checkbit_choice.GetValue()[0]
+            self.serial_port.baudrate = int(self.serial_bitrate_choice.GetValue())
+            self.serial_port.bytesize = int(self.serial_databit_choice.GetValue())
+            self.serial_port.stopbits = int(self.serial_stopbit_choice.GetValue())
             self.serial_port.open()
         except Exception as e:
             dia = wx.MessageDialog(None, "COMM Open Fail!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
@@ -588,9 +593,9 @@ class main_window(wx.Frame):
             self.serial_read_thread = serial_read_thread(self.serial_port, self)
             self.serial_read_thread.start()
 
-            self.m_serial_open_button.Enable(False)
-            self.m_serial_close_button.Enable(True)
-            self.m_write_run_seq_button.Enable(True)
+            self.serial_open_button.Disable()
+            self.serial_close_button.Enable()
+            self.seq_run_button.Enable()
 
 
     ###########################################################################
@@ -622,9 +627,9 @@ class main_window(wx.Frame):
             pass
 
 
-        self.m_serial_open_button.Enable(True)
-        self.m_serial_close_button.Enable(False)
-        self.m_write_run_seq_button.Enable(False)
+        self.serial_open_button.Enable()
+        self.serial_close_button.Disable()
+        self.seq_run_button.Disable()
 
 
     ###########################################################################
@@ -655,7 +660,7 @@ class main_window(wx.Frame):
             return
         '''
 
-        command_string = self.m_write_area.GetValue()
+        command_string = self.seq_textarea.GetValue()
 
         try:
             code_list = self.parse_convert(command_string)
@@ -666,7 +671,7 @@ class main_window(wx.Frame):
 
             return
 
-        self.m_action_list.DeleteAllItems()
+        self.action_list.DeleteAllItems()
 
         action_index = 0
         for string in command_string.splitlines():
@@ -677,12 +682,12 @@ class main_window(wx.Frame):
 
                 #print "[command: ", command, "]"
 
-                self.m_action_list.InsertStringItem(action_index, str(action_index + 1))
-                self.m_action_list.SetStringItem(action_index, 1, str(" ".join(command)))
-                self.m_action_list.SetStringItem(action_index, 2, str(" ".join(code_list[action_index])))
-                self.m_action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-                self.m_action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
-                self.m_action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
+                self.action_list.InsertStringItem(action_index, str(action_index + 1))
+                self.action_list.SetStringItem(action_index, 1, str(" ".join(command)))
+                self.action_list.SetStringItem(action_index, 2, str(" ".join(code_list[action_index])))
+                self.action_list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+                self.action_list.SetColumnWidth(1, wx.LIST_AUTOSIZE)
+                self.action_list.SetColumnWidth(2, wx.LIST_AUTOSIZE)
 
                 action_index =  action_index + 1
 
@@ -695,32 +700,32 @@ class main_window(wx.Frame):
         dia.ShowModal()
         dia.Destroy()
 
-        self.m_write_run_seq_button.Enable(True)
-        self.m_write_stop_seq_button.Enable(False)
+        self.seq_run_button.Enable()
+        self.seq_stop_button.Disable()
 
 
     ###########################################################################
     # Run seq started.
     ###########################################################################
     def on_run_seq_started(self, data):
-        self.m_serial_close_button.Enable(False)
+        self.serial_close_button.Disable()
 
-        self.m_write_convert_button.Enable(False)
-        self.m_write_run_seq_button.Enable(False)
-        self.m_write_stop_seq_button.Enable(True)
+        self.seq_convert_button.Disable()
+        self.seq_run_button.Disable()
+        self.seq_stop_button.Enable()
 
-        self.m_write_command_reset_button.Enable(False)
-        self.m_write_run_button.Enable(False)
-        self.m_write_show_ram_button.Enable(False)
-        self.m_write_show_eeprom_button.Enable(False)
-        self.m_write_write_button.Enable(False)
-        self.m_write_read_button.Enable(False)
+        self.send_reset_button.Disable()
+        self.single_run_button.Disable()
+        self.show_ram_button.Disable()
+        self.show_eeprom_button.Disable()
+        self.write_eeprom_button.Disable()
+        self.read_eeprom_button.Disable()
 
-        self.m_send_button.Enable(False)
-        self.m_send_hex_button.Enable(False)
+        self.single_send_button.Disable()
+        self.single_send_hex_button.Disable()
 
-        self.m_action_send_button.Enable(False)
-        self.m_action_send_next_button.Enable(False)
+        self.action_send_button.Disable()
+        self.action_send_next_button.Disable()
 
 
 
@@ -728,24 +733,24 @@ class main_window(wx.Frame):
     # Run seq finished.
     ###########################################################################
     def on_run_seq_finished(self, data):
-        self.m_serial_close_button.Enable(True)
+        self.serial_close_button.Enable()
 
-        self.m_write_convert_button.Enable(True)
-        self.m_write_run_seq_button.Enable(True)
-        self.m_write_stop_seq_button.Enable(False)
+        self.seq_convert_button.Enable()
+        self.seq_run_button.Enable()
+        self.seq_stop_button.Disable()
 
-        self.m_write_command_reset_button.Enable(True)
-        self.m_write_run_button.Enable(True)
-        self.m_write_show_ram_button.Enable(True)
-        self.m_write_show_eeprom_button.Enable(True)
-        self.m_write_write_button.Enable(True)
-        self.m_write_read_button.Enable(True)
+        self.send_reset_button.Enable()
+        self.single_run_button.Enable()
+        self.show_ram_button.Enable()
+        self.show_eeprom_button.Enable()
+        self.write_eeprom_button.Enable()
+        self.read_eeprom_button.Enable()
 
-        self.m_send_button.Enable(True)
-        self.m_send_hex_button.Enable(True)
+        self.single_send_button.Enable()
+        self.single_send_hex_button.Enable()
 
-        self.m_action_send_button.Enable(True)
-        self.m_action_send_next_button.Enable(True)
+        self.action_send_button.Enable()
+        self.action_send_next_button.Enable()
 
 
     ###########################################################################
@@ -763,7 +768,7 @@ class main_window(wx.Frame):
             return
         '''
 
-        command_string = self.m_write_area.GetValue()
+        command_string = self.seq_textarea.GetValue()
 
         try:
             code_list = self.parse_convert(command_string)
@@ -786,7 +791,7 @@ class main_window(wx.Frame):
     ###########################################################################
     def on_write_stop_seq_button_clicked(self, event):
         self.run_thread.event_stop.set()
-        self.m_write_stop_seq_button.Enable(False)
+        self.seq_stop_button.Disable()
 
 
     ###########################################################################
@@ -930,7 +935,7 @@ class main_window(wx.Frame):
         '''
 
         try:
-            command = self.m_send_input.GetValue().split()
+            command = self.single_input.GetValue().split()
             code = self.converter.convert(command)
             self.serial_port.write("".join(code).decode("hex"))
 
@@ -949,7 +954,7 @@ class main_window(wx.Frame):
     ###########################################################################
     def on_send_hex_button_clicked(self, event):
         try:
-            command = self.m_send_input.GetValue()
+            command = self.single_input.GetValue()
 
             self.serial_port.write(command.replace(" ", "").decode("hex"))
         except Exception as e:
@@ -964,8 +969,8 @@ class main_window(wx.Frame):
     # Action send button clicked
     ###########################################################################
     def on_action_send_button_clicked(self, event):
-        item_count = self.m_action_list.GetItemCount()
-        action_index = self.m_action_list.GetFirstSelected()
+        item_count = self.action_list.GetItemCount()
+        action_index = self.action_list.GetFirstSelected()
 
         if (item_count == 0):
             dia = wx.MessageDialog(None, "The item list is empty!", "Error", wx.OK | wx.ICON_ERROR)
@@ -987,7 +992,7 @@ class main_window(wx.Frame):
         else:
             pass
 
-        code = self.m_action_list.GetItemText(action_index, 2).split()
+        code = self.action_list.GetItemText(action_index, 2).split()
 
         #print "[code: ", code, "]"
 
@@ -1005,8 +1010,8 @@ class main_window(wx.Frame):
     # Action send next button clicked
     ###########################################################################
     def on_action_send_next_button_clicked(self, event):
-        item_count = self.m_action_list.GetItemCount()
-        action_index = self.m_action_list.GetFirstSelected()
+        item_count = self.action_list.GetItemCount()
+        action_index = self.action_list.GetFirstSelected()
 
         if (item_count == 0):
             dia = wx.MessageDialog(None, "The item list is empty!", "Error", wx.OK | wx.ICON_ERROR)
@@ -1038,8 +1043,8 @@ class main_window(wx.Frame):
         else:
             pass
 
-        self.m_action_list.Select(action_index + 1)
-        code = self.m_action_list.GetItemText(action_index + 1, 2).split()
+        self.action_list.Select(action_index + 1)
+        code = self.action_list.GetItemText(action_index + 1, 2).split()
 
         #print "[code: ", code, "]"
 

@@ -1,10 +1,24 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from core.app_main import app_main
+import wx
 
-NAME    = u"SMCSC(Step motor control system client) - OUYANG Lab"
-VERSION = 1.0
+from main_frame import main_frame
 
-app = app_main()
-app.MainLoop()
+class smcsc(wx.App):
+    name    = u"SMCSC(Step motor control system client)"
+    version = u"1.0"
+    org     = u"OUYANG Lab"
+
+    def OnInit(self):
+        frame_title = self.name + "-" + self.version + " " + self.org
+
+        self.frame = main_frame(frame_title)
+
+        self.frame.Show()
+
+        return True
+
+if __name__ == "__main__":
+    app = smcsc()
+    app.MainLoop()
