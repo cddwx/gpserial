@@ -520,7 +520,7 @@ class main_frame(wx.Frame):
         try:
             self.serial_port.timeout = 1
             self.serial_port.xonxoff = 0
-            self.serial_port.port = self.serial_port_choice.GetString(self.serial_port_choice.GetSelection())
+            self.serial_port.port = str(self.serial_port_choice.GetString(self.serial_port_choice.GetSelection()))
             self.serial_port.baudrate = int(self.serial_bitrate_choice.GetString(self.serial_bitrate_choice.GetSelection()))
             self.serial_port.parity = self.serial_checkbit_choice.GetString(self.serial_checkbit_choice.GetSelection())[0]
             self.serial_port.bytesize = int(self.serial_databit_choice.GetString(self.serial_databit_choice.GetSelection()))
@@ -962,6 +962,7 @@ Current command last time   : %s''' %(" ".join(code_list[0][0]), command_time_st
     def on_single_send_hex_button_clicked(self, event):
         try:
             command = self.single_input.GetValue()
+            print "[command: ", command, "]"
 
             self.serial_port.write(command.replace(" ", "").decode("hex"))
         except Exception as e:

@@ -46,27 +46,27 @@ class serial_read_thread(threading.Thread):
 
                 count = 0
                 text = ""
-                while (count < len("Running finished.\x0D\x0A\x0D\x0A")):
-                    if (self.event_run_seq.is_set() == False):
-                        break
-                    else:
+                while (
+                        (count < len("Running finished.\x0D\x0A\x0D\x0A")) and
+                        (self.event_run_seq.is_set() == True)
+                ):
+                    try:
+                        in_waiting = self.serial_port.inWaiting()
+                    except (ValueError, Exception) as e:
+                        return
+
+                    if (in_waiting > 0):
+                        #print in_waiting
                         try:
-                            in_waiting = self.serial_port.inWaiting()
+                            text = text + self.serial_port.read(in_waiting)
                         except (ValueError, Exception) as e:
-                            return
+                            wx.CallAfter(pub.sendMessage, "serial_read_error", data = e.message)
 
-                        if (in_waiting > 0):
-                            #print in_waiting
-                            try:
-                                text = text + self.serial_port.read(in_waiting)
-                            except (ValueError, Exception) as e:
-                                wx.CallAfter(pub.sendMessage, "serial_read_error", data = e.message)
+                        count = count + in_waiting
+                    else:
+                        pass
 
-                            count = count + in_waiting
-                        else:
-                            pass
-
-                        time.sleep(0.01)
+                    time.sleep(0.01)
 
                 if (text == "Running finished.\x0D\x0A\x0D\x0A"):
                     wx.CallAfter(pub.sendMessage, "update", data = text)
