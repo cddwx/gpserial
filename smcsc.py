@@ -7,7 +7,7 @@ from main_frame import main_frame
 
 class smcsc(wx.App):
     name    = u"SMCSC(Step motor control system client)"
-    version = u"1.0"
+    version = u"1.4"
     org     = u"OUYANG Lab"
 
     def OnInit(self):
