@@ -121,7 +121,7 @@ class main_frame(wx.Frame):
         # Seq.
         #
         self.seq_textarea = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE)
-        self.seq_convert_button = wx.Button(self.panel, label=u"Check seq")
+        self.seq_convert_button = wx.Button(self.panel, label=u"Convert seq")
 
         self.seq_run_button = wx.Button(self.panel, label=u"Run seq")
         self.seq_run_button.Disable()
@@ -424,60 +424,6 @@ class main_frame(wx.Frame):
         return port_choice
 
 
-    ###########################################################################
-    # is_int
-    ###########################################################################
-    def is_int(self, string):
-        try:
-            int(string)
-            return True
-        except ValueError:
-            return False
-
-
-    ###########################################################################
-    # is_hex
-    ###########################################################################
-    def is_hex(self, string):
-        try:
-            int(string, 16)
-            return True
-        except ValueError:
-            return False
-
-
-    ###########################################################################
-    # is_one_bit_hex
-    ###########################################################################
-    def is_one_bit_hex(self, name, string):
-        if (len(string) != 1):
-            raise ValueError("Back code set error!\n" + name + " length is wrong! Need to be 1 bit.")
-
-        if (not self.is_hex(string)):
-            raise ValueError("Back code set error!\n" + name + " is not hex string!")
-
-        if ((int(string, 16) < 0) or (int(string, 16) > 15)):
-            raise ValueError("Back code set error!\n" + name + " is exced the range 0--F!")
-
-        return True
-
-
-    ###########################################################################
-    # is_two_bit_hex
-    ###########################################################################
-    def is_two_bit_hex(self, name, string):
-        if (len(string) != 2):
-            raise ValueError("Back code set error!\n" + name + " length is wrong! Need to be 2 bit.")
-
-        if (not self.is_hex(string)):
-            raise ValueError("Back code set error!\n" + name + " is not hex string!")
-
-        if ((int(string, 16) < 0) or (int(string, 16) > 255)):
-            raise ValueError("Back code set error!\n" + name + " is exced the range 00--FF!")
-
-        return True
-
-
     #
     # Event handle functions
     #
@@ -669,6 +615,7 @@ class main_frame(wx.Frame):
         self.single_send_button.Disable()
         self.single_send_hex_button.Disable()
 
+        self.action_list.Disable()
         self.action_send_button.Disable()
         self.action_send_next_button.Disable()
 
@@ -709,6 +656,10 @@ Current command last time   : %s''' %(" ".join(code_list[count + 1][0]), command
     # Run seq finished.
     ###########################################################################
     def on_run_seq_finished(self, data):
+        dia = wx.MessageDialog(self, "Run seq finished!", "Finished", wx.OK | wx.ICON_INFORMATION)
+        dia.ShowModal()
+        dia.Destroy()
+
         self.serial_close_button.Enable()
 
         self.seq_convert_button.Enable()
@@ -733,17 +684,6 @@ Current command last time   : %s''' %(" ".join(code_list[count + 1][0]), command
     # Run seq button clicked
     ###########################################################################
     def on_seq_run_button_clicked(self, event):
-        '''
-        try:
-            self.set_constant()
-        except ValueError as e:
-            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
-            dia.ShowModal()
-            dia.Destroy()
-
-            return
-        '''
-
         command_string = self.seq_textarea.GetValue()
 
         try:
