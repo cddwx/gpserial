@@ -676,6 +676,7 @@ Current command last time   : %s''' %(" ".join(code_list[count + 1][0]), command
         self.single_send_button.Enable()
         self.single_send_hex_button.Enable()
 
+        self.action_list.Enable()
         self.action_send_button.Enable()
         self.action_send_next_button.Enable()
 
@@ -902,7 +903,7 @@ Current command last time   : %s''' %(" ".join(code_list[0][0]), command_time_st
     def on_single_send_hex_button_clicked(self, event):
         try:
             command = self.single_input.GetValue()
-            print "[command: ", command, "]"
+            #print "[command: ", command, "]"
 
             self.serial_port.write(command.replace(" ", "").decode("hex"))
         except Exception as e:
