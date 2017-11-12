@@ -25,7 +25,7 @@ class run_thread(threading.Thread):
         for code in self.code_list:
             if (self.event_stop.is_set()):
                 self.serial_read_thread.event_run_seq.clear()
-                wx.CallAfter(pub.sendMessage, "run_seq_finished", data = "OK")
+                wx.CallAfter(pub.sendMessage, "run_seq_finished", data = "Run seq interrupt by user!")
 
                 return
             else:
@@ -46,4 +46,4 @@ class run_thread(threading.Thread):
                 count = count + 1
 
         self.serial_read_thread.event_run_seq.clear()
-        wx.CallAfter(pub.sendMessage, "run_seq_finished", data = "OK")
+        wx.CallAfter(pub.sendMessage, "run_seq_finished", data = "Run seq finished!")
