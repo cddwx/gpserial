@@ -52,29 +52,6 @@ class main_frame(wx.Frame):
         self.panel = wx.Panel(self)
 
         #
-        # Recieve.
-        #
-        self.recieve_textarea = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
-        self.recieve_clear_button = wx.Button(self.panel, label=u"Clear")
-
-        #
-        # Send
-        #
-
-        self.action_list = wx.ListCtrl(self.panel, style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES | wx.LC_SINGLE_SEL)
-        self.action_list.InsertColumn(0, u"Id", format=wx.LIST_FORMAT_LEFT)
-        self.action_list.InsertColumn(1, u"Command", format=wx.LIST_FORMAT_LEFT)
-        self.action_list.InsertColumn(2, u"Hex code", format=wx.LIST_FORMAT_LEFT)
-        self.action_list.InsertColumn(3, u"Time used", format=wx.LIST_FORMAT_LEFT)
-
-        self.action_send_button = wx.Button(self.panel, label=u"Send")
-        self.action_send_button.Disable()
-
-        self.action_send_next_button = wx.Button(self.panel, label=u"Send next")
-        self.action_send_next_button.Disable()
-
-
-        #
         # Serial
         #
         self.serial_port_title = wx.StaticText(self.panel, label=u"Port: ")
@@ -133,6 +110,16 @@ class main_frame(wx.Frame):
         self.seq_stop_button.Disable()
 
         #
+        # Single send
+        #
+        self.single_input = wx.TextCtrl(self.panel, value=u"")
+        self.single_send_button = wx.Button(self.panel, label=u"Send command")
+        self.single_send_button.Disable()
+
+        self.single_send_hex_button = wx.Button(self.panel, label=u"Send code")
+        self.single_send_hex_button.Disable()
+
+        #
         # Control
         #
         self.mcu_reset_button = wx.Button(self.panel, label=u"*** MCU RESET ***")
@@ -157,14 +144,27 @@ class main_frame(wx.Frame):
         self.read_eeprom_button.Disable()
 
         #
-        # Single send
+        # Recieve.
         #
-        self.single_input = wx.TextCtrl(self.panel, value=u"")
-        self.single_send_button = wx.Button(self.panel, label=u"Send command")
-        self.single_send_button.Disable()
+        self.recieve_textarea = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
+        self.recieve_clear_button = wx.Button(self.panel, label=u"Clear")
 
-        self.single_send_hex_button = wx.Button(self.panel, label=u"Send code")
-        self.single_send_hex_button.Disable()
+        #
+        # Send
+        #
+
+        self.action_list = wx.ListCtrl(self.panel, style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES | wx.LC_SINGLE_SEL)
+        self.action_list.InsertColumn(0, u"Id", format=wx.LIST_FORMAT_LEFT)
+        self.action_list.InsertColumn(1, u"Command", format=wx.LIST_FORMAT_LEFT)
+        self.action_list.InsertColumn(2, u"Hex code", format=wx.LIST_FORMAT_LEFT)
+        self.action_list.InsertColumn(3, u"Time used", format=wx.LIST_FORMAT_LEFT)
+
+        self.action_send_button = wx.Button(self.panel, label=u"Send")
+        self.action_send_button.Disable()
+
+        self.action_send_next_button = wx.Button(self.panel, label=u"Send next")
+        self.action_send_next_button.Disable()
+
 
 
     ############################################################################
@@ -252,118 +252,118 @@ class main_frame(wx.Frame):
         ##### Serial refresh button box
         #
         serial_refresh_button_box = wx.BoxSizer(wx.HORIZONTAL)
-        serial_refresh_button_box.Add(self.serial_refresh_button, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        serial_refresh_button_box.Add(self.serial_refresh_button, 1, wx.ALIGN_CENTER_VERTICAL)
         
         #
         ##### Serial open button box
         #
         serial_open_button_box = wx.BoxSizer(wx.HORIZONTAL)
-        serial_open_button_box.Add(self.serial_open_button, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        serial_open_button_box.Add(self.serial_open_button, 1, wx.ALIGN_CENTER_VERTICAL)
         
         #
         ##### Serial close button box
         #
         serial_close_button_box = wx.BoxSizer(wx.HORIZONTAL)
-        serial_close_button_box.Add(self.serial_close_button, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        serial_close_button_box.Add(self.serial_close_button, 1, wx.ALIGN_CENTER_VERTICAL)
         
         #
         #
         ##### Program exit button box
         #
         program_exit_button_box = wx.BoxSizer(wx.HORIZONTAL)
-        program_exit_button_box.Add(self.program_exit_button, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        program_exit_button_box.Add(self.program_exit_button, 1, wx.ALIGN_CENTER_VERTICAL)
         
         #
         #### Operate box
         #
         operate_box = wx.BoxSizer(wx.VERTICAL)
-        operate_box.Add(serial_refresh_button_box, 1, wx.EXPAND)
-        operate_box.Add(serial_open_button_box, 1, wx.EXPAND)
-        operate_box.Add(serial_close_button_box, 1, wx.EXPAND)
+        operate_box.Add(serial_refresh_button_box, 1, wx.EXPAND | wx.DOWN, 5)
+        operate_box.Add(serial_open_button_box, 1, wx.EXPAND | wx.DOWN, 5)
+        operate_box.Add(serial_close_button_box, 1, wx.EXPAND | wx.DOWN, 5)
         operate_box.Add(program_exit_button_box, 1, wx.EXPAND)
 
         #
         ### Setting box
         #
         setting_box = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, u"Setting area")
-        setting_box.Add(parameter_box, 1, wx.EXPAND | wx.ALL, 5)
-        setting_box.Add(operate_box, 1, wx.EXPAND | wx.ALL, 5)
+        setting_box.Add(parameter_box, 1, wx.EXPAND | wx.RIGHT, 5)
+        setting_box.Add(operate_box, 0, wx.EXPAND)
 
         #
         #### Seq textarea box
         #
         seq_textarea_box = wx.BoxSizer(wx.HORIZONTAL)
-        seq_textarea_box.Add(self.seq_textarea, 1, wx.EXPAND | wx.ALL, 5)
+        seq_textarea_box.Add(self.seq_textarea, 1, wx.EXPAND)
 
         #
         #### Seq send buttons box
         #
         seq_send_buttons_box = wx.BoxSizer(wx.HORIZONTAL)
-        seq_send_buttons_box.Add(self.seq_convert_button, 1, wx.ALL, 5)
-        seq_send_buttons_box.Add(self.seq_run_button, 1, wx.ALL, 5)
-        seq_send_buttons_box.Add(self.seq_stop_button, 1, wx.ALL, 5)
+        seq_send_buttons_box.Add(self.seq_convert_button, 1, wx.RIGHT, 5)
+        seq_send_buttons_box.Add(self.seq_run_button, 1, wx.RIGHT, 5)
+        seq_send_buttons_box.Add(self.seq_stop_button, 1)
 
         #
         ### Seq send box
         #
         seq_send_box = wx.StaticBoxSizer(wx.VERTICAL, self.panel, u"Seq send area")
-        seq_send_box.Add(seq_textarea_box, 1, wx.EXPAND)
+        seq_send_box.Add(seq_textarea_box, 1, wx.EXPAND | wx.DOWN, 5)
         seq_send_box.Add(seq_send_buttons_box, 0, wx.EXPAND)
 
         #
         #### Single send buttons box
         #
         single_input_box = wx.BoxSizer(wx.HORIZONTAL)
-        single_input_box.Add(self.single_input, 1, wx.ALL, 5)
+        single_input_box.Add(self.single_input, 1)
 
         #
         #### Single send buttons box
         #
         single_send_buttons_box = wx.BoxSizer(wx.HORIZONTAL)
-        single_send_buttons_box.Add(self.single_send_button, 1, wx.ALL, 5)
-        single_send_buttons_box.Add(self.single_send_hex_button, 1, wx.ALL, 5)
+        single_send_buttons_box.Add(self.single_send_button, 1, wx.RIGHT, 5)
+        single_send_buttons_box.Add(self.single_send_hex_button, 1)
 
         #
         ### Single send box
         #
         single_send_box = wx.StaticBoxSizer(wx.VERTICAL, self.panel, u"Single send area")
-        single_send_box.Add(single_input_box, 0, wx.EXPAND)
+        single_send_box.Add(single_input_box, 0, wx.EXPAND | wx.DOWN, 5)
         single_send_box.Add(single_send_buttons_box, 0, wx.EXPAND)
 
         #
         ##### Control buttons1 box
         #
         control_buttons1_box = wx.BoxSizer(wx.HORIZONTAL)
-        control_buttons1_box.Add(self.mcu_reset_button, 1, wx.ALL, 5)
+        control_buttons1_box.Add(self.mcu_reset_button, 1)
 
         #
         ##### Control buttons2 box
         #
         control_buttons2_box = wx.BoxSizer(wx.HORIZONTAL)
-        control_buttons2_box.Add(self.send_reset_button, 1, wx.ALL, 5)
-        control_buttons2_box.Add(self.single_run_button, 1, wx.ALL, 5)
+        control_buttons2_box.Add(self.send_reset_button, 1, wx.RIGHT, 5)
+        control_buttons2_box.Add(self.single_run_button, 1)
 
         #
         ##### Control buttons3 box
         #
         control_buttons3_box = wx.BoxSizer(wx.HORIZONTAL)
-        control_buttons3_box.Add(self.show_ram_button, 1, wx.ALL, 5)
-        control_buttons3_box.Add(self.show_eeprom_button, 1, wx.ALL, 5)
+        control_buttons3_box.Add(self.show_ram_button, 1, wx.RIGHT, 5)
+        control_buttons3_box.Add(self.show_eeprom_button, 1)
 
         #
         ##### Control buttons4 box
         #
         control_buttons4_box = wx.BoxSizer(wx.HORIZONTAL)
-        control_buttons4_box.Add(self.write_eeprom_button, 1, wx.ALL, 5)
-        control_buttons4_box.Add(self.read_eeprom_button, 1, wx.ALL, 5)
+        control_buttons4_box.Add(self.write_eeprom_button, 1, wx.RIGHT, 5)
+        control_buttons4_box.Add(self.read_eeprom_button, 1)
 
         #
         ### Control box
         #
         control_box = wx.StaticBoxSizer(wx.VERTICAL, self.panel, u"Control area")
-        control_box.Add(control_buttons1_box, 0, wx.EXPAND)
-        control_box.Add(control_buttons2_box, 0, wx.EXPAND)
-        control_box.Add(control_buttons3_box, 0, wx.EXPAND)
+        control_box.Add(control_buttons1_box, 0, wx.EXPAND | wx.DOWN, 5)
+        control_box.Add(control_buttons2_box, 0, wx.EXPAND | wx.DOWN, 5)
+        control_box.Add(control_buttons3_box, 0, wx.EXPAND | wx.DOWN, 5)
         control_box.Add(control_buttons4_box, 0, wx.EXPAND)
 
 
@@ -371,27 +371,27 @@ class main_frame(wx.Frame):
         ### Recieve box
         #
         recieve_box = wx.StaticBoxSizer(wx.VERTICAL, self.panel, u"Recieve area")
-        recieve_box.Add(self.recieve_textarea, 1, wx.EXPAND | wx.ALL, 5)
-        recieve_box.Add(self.recieve_clear_button, 0, wx.ALL, 5)
+        recieve_box.Add(self.recieve_textarea, 1, wx.EXPAND | wx.DOWN, 5)
+        recieve_box.Add(self.recieve_clear_button, 0)
 
         #
         #### Action list box
         #
         action_list_box = wx.BoxSizer(wx.HORIZONTAL)
-        action_list_box.Add(self.action_list, 1, wx.EXPAND | wx.ALL, 5)
+        action_list_box.Add(self.action_list, 1, wx.EXPAND)
 
         #
         #### Action send buttons box
         #
         action_send_buttons_box = wx.BoxSizer(wx.HORIZONTAL)
-        action_send_buttons_box.Add(self.action_send_button, 1, wx.ALL, 5)
-        action_send_buttons_box.Add(self.action_send_next_button, 1, wx.ALL, 5)
+        action_send_buttons_box.Add(self.action_send_button, 1, wx.RIGHT, 5)
+        action_send_buttons_box.Add(self.action_send_next_button, 1)
 
         #
         ### Action send box
         #
         action_send_box = wx.StaticBoxSizer(wx.VERTICAL, self.panel, u"List send area")
-        action_send_box.Add(action_list_box, 1, wx.EXPAND)
+        action_send_box.Add(action_list_box, 1, wx.EXPAND | wx.DOWN, 5)
         action_send_box.Add(action_send_buttons_box, 0, wx.EXPAND)
 
 
@@ -399,24 +399,24 @@ class main_frame(wx.Frame):
         ## Left
         #
         left_box = wx.BoxSizer(wx.VERTICAL)
-        left_box.Add(setting_box, 0, wx.EXPAND | wx.ALL, 5)
-        left_box.Add(seq_send_box, 2, wx.EXPAND | wx.ALL, 5)
-        left_box.Add(single_send_box, 1, wx.EXPAND | wx.ALL, 5)
-        left_box.Add(control_box, 0, wx.EXPAND | wx.ALL, 5)
+        left_box.Add(setting_box, 0, wx.EXPAND | wx.DOWN, 5)
+        left_box.Add(seq_send_box, 2, wx.EXPAND | wx.DOWN, 5)
+        left_box.Add(single_send_box, 1, wx.EXPAND | wx.DOWN, 5)
+        left_box.Add(control_box, 0, wx.EXPAND)
 
         #
         ## Right
         #
         right_box = wx.BoxSizer(wx.VERTICAL)
-        right_box.Add(recieve_box, 1, wx.EXPAND | wx.ALL, 5)
-        right_box.Add(action_send_box, 1, wx.EXPAND | wx.ALL, 5)
+        right_box.Add(recieve_box, 1, wx.EXPAND | wx.DOWN, 5)
+        right_box.Add(action_send_box, 1, wx.EXPAND)
 
         #
         # Main box
         #
         main_box = wx.BoxSizer(wx.HORIZONTAL)
-        main_box.Add(left_box, 1, wx.EXPAND)
-        main_box.Add(right_box, 2, wx.EXPAND)
+        main_box.Add(left_box, 2, wx.EXPAND | wx.ALL, 5)
+        main_box.Add(right_box, 3, wx.EXPAND | wx.ALL, 5)
 
         self.panel.SetSizer(main_box)
         self.panel.Fit()
