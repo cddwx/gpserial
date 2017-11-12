@@ -68,7 +68,10 @@ class main_frame(wx.Frame):
         self.action_list.InsertColumn(3, u"Time used", format=wx.LIST_FORMAT_LEFT)
 
         self.action_send_button = wx.Button(self.panel, label=u"Send")
+        self.action_send_button.Disable()
+
         self.action_send_next_button = wx.Button(self.panel, label=u"Send next")
+        self.action_send_next_button.Disable()
 
 
         #
@@ -133,19 +136,35 @@ class main_frame(wx.Frame):
         # Control
         #
         self.mcu_reset_button = wx.Button(self.panel, label=u"*** MCU RESET ***")
+        self.mcu_reset_button.Disable()
+        
         self.send_reset_button = wx.Button(self.panel, label=u"Command reset")
+        self.send_reset_button.Disable()
+
         self.single_run_button = wx.Button(self.panel, label=u"= Run code =")
+        self.single_run_button.Disable()
+
         self.show_ram_button = wx.Button(self.panel, label=u"Show RAM code")
+        self.show_ram_button.Disable()
+
         self.show_eeprom_button = wx.Button(self.panel, label=u"Show EEPROM code")
+        self.show_eeprom_button.Disable()
+
         self.write_eeprom_button = wx.Button(self.panel, label=u"Write to EEPROM")
+        self.write_eeprom_button.Disable()
+
         self.read_eeprom_button = wx.Button(self.panel, label=u"Load from EEPROM")
+        self.read_eeprom_button.Disable()
 
         #
         # Single send
         #
         self.single_input = wx.TextCtrl(self.panel, value=u"")
         self.single_send_button = wx.Button(self.panel, label=u"Send command")
+        self.single_send_button.Disable()
+
         self.single_send_hex_button = wx.Button(self.panel, label=u"Send code")
+        self.single_send_hex_button.Disable()
 
 
     ############################################################################
@@ -267,7 +286,7 @@ class main_frame(wx.Frame):
         ### Setting box
         #
         setting_box = wx.StaticBoxSizer(wx.HORIZONTAL, self.panel, u"Setting area")
-        setting_box.Add(parameter_box, 2, wx.EXPAND | wx.ALL, 5)
+        setting_box.Add(parameter_box, 1, wx.EXPAND | wx.ALL, 5)
         setting_box.Add(operate_box, 1, wx.EXPAND | wx.ALL, 5)
 
         #
@@ -447,7 +466,14 @@ class main_frame(wx.Frame):
     ###########################################################################
     def on_recieve_area_update(self, data):
         #print "data[", data, "]"
-        self.recieve_textarea.AppendText(data)
+        #print type(data)
+        try:
+            self.recieve_textarea.AppendText(data)
+        except (UnicodeDecodeError) as e:
+            print "Main_frame.on_recieve_area_update: " + e.message
+            dia = wx.MessageDialog(self, e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
 
 
     ###########################################################################
@@ -493,22 +519,28 @@ class main_frame(wx.Frame):
 
         self.serial_open_button.Disable()
         self.serial_close_button.Enable()
+
         self.seq_run_button.Enable()
+
+        self.mcu_reset_button.Enable()  
+        self.send_reset_button.Enable()
+        self.single_run_button.Enable()
+        self.show_ram_button.Enable()
+        self.show_eeprom_button.Enable()
+        self.write_eeprom_button.Enable()
+        self.read_eeprom_button.Enable()
+
+        self.single_send_button.Enable()
+        self.single_send_hex_button.Enable()
+
+        self.action_send_button.Enable()
+        self.action_send_next_button.Enable()
 
 
     ###########################################################################
     # Serial close button clicked
     ###########################################################################
     def on_serial_close_button_clicked(self, event):
-        try:
-            self.serial_port.close()
-        except Exception as e:
-            dia = wx.MessageDialog(self, "COMM close Fail!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
-            dia.ShowModal()
-            dia.Destroy()
-
-            return
-
         try:
             self.run_thread.event_stop.set()
         except Exception as e:
@@ -524,10 +556,33 @@ class main_frame(wx.Frame):
         except Exception as e:
             pass
 
+        try:
+            self.serial_port.close()
+        except Exception as e:
+            dia = wx.MessageDialog(self, "COMM close Fail!\n" + e.message, "Error", wx.OK | wx.ICON_ERROR)
+            dia.ShowModal()
+            dia.Destroy()
+
+            return
 
         self.serial_open_button.Enable()
         self.serial_close_button.Disable()
+
         self.seq_run_button.Disable()
+
+        self.mcu_reset_button.Disable()  
+        self.send_reset_button.Disable()
+        self.single_run_button.Disable()
+        self.show_ram_button.Disable()
+        self.show_eeprom_button.Disable()
+        self.write_eeprom_button.Disable()
+        self.read_eeprom_button.Disable()
+
+        self.single_send_button.Disable()
+        self.single_send_hex_button.Disable()
+
+        self.action_send_button.Disable()
+        self.action_send_next_button.Disable()
 
 
     ###########################################################################
@@ -656,7 +711,7 @@ Current command last time   : %s''' %(" ".join(code_list[count + 1][0]), command
     # Run seq finished.
     ###########################################################################
     def on_run_seq_finished(self, data):
-        dia = wx.MessageDialog(self, "Run seq finished!", "Finished", wx.OK | wx.ICON_INFORMATION)
+        dia = wx.MessageDialog(self, data, "Finished", wx.OK | wx.ICON_INFORMATION)
         dia.ShowModal()
         dia.Destroy()
 
@@ -665,6 +720,11 @@ Current command last time   : %s''' %(" ".join(code_list[count + 1][0]), command
         self.seq_convert_button.Enable()
         self.seq_run_button.Enable()
         self.seq_stop_button.Disable()
+
+        if (self.seq_stop_button.GetLabel() != "Stop after here"):
+            self.seq_stop_button.SetLabel("Stop after here")
+        else:
+            pass
 
         self.send_reset_button.Enable()
         self.single_run_button.Enable()
@@ -740,6 +800,7 @@ Current command last time   : %s''' %(" ".join(code_list[0][0]), command_time_st
     def on_seq_stop_button_clicked(self, event):
         self.run_thread.event_stop.set()
         self.seq_stop_button.Disable()
+        self.seq_stop_button.SetLabel("Waiting ...")
 
 
     ###########################################################################
