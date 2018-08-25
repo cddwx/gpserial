@@ -1,1 +1,4 @@
+*~
 **/*.pyc
+build-linux/*
+build-win32/*
